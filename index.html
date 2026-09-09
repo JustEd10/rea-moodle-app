@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Moodle РЭУ Помощник</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg: var(--tg-theme-bg-color, #ffffff);
+      --text: var(--tg-theme-text-color, #000000);
+      --hint: var(--tg-theme-hint-color, #8e8e93);
+      --btn: var(--tg-theme-button-color, #2481cc);
+      --btn-text: var(--tg-theme-button-text-color, #ffffff);
+      --secondary-bg: var(--tg-theme-secondary-bg-color, #f2f2f7);
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--secondary-bg);
+      color: var(--text);
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .header {
+      background: var(--bg);
+      padding: 16px;
+      border-radius: 14px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .header h2 {
+      margin: 0 0 4px 0;
+      font-size: 20px;
+    }
+
+    .header p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--hint);
+    }
+
+    .section-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      color: var(--hint);
+      margin: 16px 8px 8px 8px;
+      font-weight: 600;
+    }
+
+    .card {
+      background: var(--bg);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 0.5px solid rgba(0,0,0,0.08);
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .menu-item:last-child {
+      border-bottom: none;
+    }
+
+    .menu-item:active {
+      background-color: var(--secondary-bg);
+    }
+
+    .icon-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .arrow {
+      color: var(--hint);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h2 id="userName">Привет!</h2>
+    <p>Управление заданиями study.rea.ru</p>
+  </div>
+
+  <div class="section-title">Действия</div>
+  <div class="card">
+    <div class="menu-item" onclick="sendAction('refresh_courses')">
+      <div class="icon-title">
+        <span>🔄</span>
+        <span>Обновить список курсов</span>
+      </div>
+      <span class="arrow">›</span>
+    </div>
+
+    <div class="menu-item" onclick="sendAction('open_profile')">
+      <div class="icon-title">
+        <span>👤</span>
+        <span>Мой профиль</span>
+      </div>
+      <span class="arrow">›</span>
+    </div>
+  </div>
+
+  <div class="section-title">Сессия</div>
+  <div class="card">
+    <div class="menu-item" onclick="sendAction('action_logout')">
+      <div class="icon-title">
+        <span>🚪</span>
+        <span style="color: #ff3b30;">Выйти из аккаунта</span>
+      </div>
+      <span class="arrow">›</span>
+    </div>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    // Подставляем имя из Telegram
+    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+      document.getElementById('userName').textContent = `Привет, ${tg.initDataUnsafe.user.first_name}!`;
+    }
+
+    // Отправка команды боту и закрытие окна
+    function sendAction(actionName) {
+      tg.sendData(JSON.stringify({ action: actionName }));
+    }
+  </script>
+</body>
+</html>
