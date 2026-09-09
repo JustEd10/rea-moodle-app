@@ -3,143 +3,558 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Moodle РЭУ Помощник</title>
+  <title>Moodle РЭУ</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg: var(--tg-theme-bg-color, #ffffff);
-      --text: var(--tg-theme-text-color, #000000);
+      --bg: var(--tg-theme-bg-color, #f4f4f7);
+      --card-bg: var(--tg-theme-secondary-bg-color, #ffffff);
+      --text: var(--tg-theme-text-color, #1c1c1e);
       --hint: var(--tg-theme-hint-color, #8e8e93);
-      --btn: var(--tg-theme-button-color, #2481cc);
+      --btn: var(--tg-theme-button-color, #2ea6ff);
       --btn-text: var(--tg-theme-button-text-color, #ffffff);
-      --secondary-bg: var(--tg-theme-secondary-bg-color, #f2f2f7);
+      --separator: rgba(60, 60, 67, 0.12);
+      --success: #34c759;
+      --danger: #ff3b30;
     }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     body {
       margin: 0;
-      padding: 16px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--secondary-bg);
+      padding: 14px;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
       color: var(--text);
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
     }
 
-    .header {
-      background: var(--bg);
-      padding: 16px;
-      border-radius: 14px;
-      margin-bottom: 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    /* Навигация и шапка */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
     }
 
-    .header h2 {
-      margin: 0 0 4px 0;
-      font-size: 20px;
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    .header p {
-      margin: 0;
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #007aff, #5856d6);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .user-name { font-size: 17px; font-weight: 600; margin: 0; }
+    .user-status { font-size: 13px; color: var(--hint); margin: 0; }
+
+    .header-btn {
+      background: var(--card-bg);
+      border: none;
+      padding: 8px 12px;
+      border-radius: 10px;
+      color: var(--btn);
       font-size: 14px;
-      color: var(--hint);
+      font-weight: 500;
+      cursor: pointer;
     }
 
+    /* Экраны */
+    .screen { display: none; animation: fadeIn 0.2s ease-in-out; }
+    .screen.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Карточки */
     .section-title {
       font-size: 13px;
       text-transform: uppercase;
       color: var(--hint);
-      margin: 16px 8px 8px 8px;
+      margin: 16px 6px 8px 6px;
       font-weight: 600;
+      letter-spacing: -0.1px;
     }
 
     .card {
-      background: var(--bg);
+      background: var(--card-bg);
       border-radius: 14px;
       overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
     }
 
-    .menu-item {
+    .list-item {
+      padding: 14px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 14px 16px;
-      border-bottom: 0.5px solid rgba(0,0,0,0.08);
+      border-bottom: 0.5px solid var(--separator);
       cursor: pointer;
       font-size: 16px;
     }
 
-    .menu-item:last-child {
-      border-bottom: none;
+    .list-item:last-child { border-bottom: none; }
+    .list-item:active { background: rgba(0,0,0,0.03); }
+
+    .item-title {
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1.3;
+      margin-right: 10px;
     }
 
-    .menu-item:active {
-      background-color: var(--secondary-bg);
+    .arrow { color: var(--hint); font-size: 18px; }
+
+    /* Поля ввода */
+    .input-field {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--separator);
+      border-radius: 10px;
+      font-size: 15px;
+      background: var(--card-bg);
+      color: var(--text);
+      margin-bottom: 12px;
+      outline: none;
     }
 
-    .icon-title {
+    .input-field:focus { border-color: var(--btn); }
+
+    textarea.input-field {
+      min-height: 80px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    /* Кнопки */
+    .btn-main {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      background: var(--btn);
+      color: var(--btn-text);
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: center;
+      gap: 8px;
     }
 
-    .arrow {
+    .btn-main:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-sub {
+      background: none;
+      border: none;
+      color: var(--btn);
+      font-size: 15px;
+      padding: 10px;
+      width: 100%;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    /* Загрузка файла */
+    .upload-box {
+      border: 2px dashed var(--separator);
+      border-radius: 12px;
+      padding: 20px 14px;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 14px;
+      background: var(--card-bg);
+    }
+
+    .upload-box.has-file {
+      border-color: var(--success);
+      background: rgba(52, 199, 89, 0.05);
+    }
+
+    .file-name {
+      font-weight: 600;
+      color: var(--text);
+      margin-top: 6px;
+      word-break: break-all;
+    }
+
+    /* Индикатор загрузки */
+    .loader {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      border: 2.5px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .spinner-center {
+      text-align: center;
+      padding: 40px 0;
       color: var(--hint);
-      font-size: 14px;
     }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <h2 id="userName">Привет!</h2>
-    <p>Управление заданиями study.rea.ru</p>
+  <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
+  <div class="top-bar">
+    <div class="user-info">
+      <div class="avatar" id="avatarLetter">U</div>
+      <div>
+        <div class="user-name" id="userNameLabel">Moodle РЭУ</div>
+        <div class="user-status" id="userStatusLabel">Подключение...</div>
+      </div>
+    </div>
+    <button class="header-btn" onclick="refreshCourses()">🔄 Обновить</button>
   </div>
 
-  <div class="section-title">Действия</div>
-  <div class="card">
-    <div class="menu-item" onclick="sendAction('refresh_courses')">
-      <div class="icon-title">
-        <span>🔄</span>
-        <span>Обновить список курсов</span>
-      </div>
-      <span class="arrow">›</span>
-    </div>
-
-    <div class="menu-item" onclick="sendAction('open_profile')">
-      <div class="icon-title">
-        <span>👤</span>
-        <span>Мой профиль</span>
-      </div>
-      <span class="arrow">›</span>
+  <!-- ЭКРАН 1: ЗАГРУЗКА -->
+  <div id="screenLoading" class="screen active">
+    <div class="spinner-center">
+      <div class="loader" style="border-top-color: var(--btn); border-color: rgba(0,0,0,0.1);"></div>
+      <p style="margin-top: 14px;">Синхронизация с Moodle...</p>
     </div>
   </div>
 
-  <div class="section-title">Сессия</div>
-  <div class="card">
-    <div class="menu-item" onclick="sendAction('action_logout')">
-      <div class="icon-title">
-        <span>🚪</span>
-        <span style="color: #ff3b30;">Выйти из аккаунта</span>
-      </div>
-      <span class="arrow">›</span>
+  <!-- ЭКРАН 2: ВХОД В АККАУНТ -->
+  <div id="screenLogin" class="screen">
+    <div class="section-title">Авторизация study.rea.ru</div>
+    <div class="card" style="padding: 16px;">
+      <input type="text" id="loginInput" class="input-field" placeholder="Логин (например, Ivanov.II)">
+      <input type="password" id="passwordInput" class="input-field" placeholder="Пароль">
+      <button class="btn-main" id="loginBtn" onclick="performLogin()">Войти в аккаунт</button>
     </div>
+  </div>
+
+  <!-- ЭКРАН 3: СПИСОК ПРЕДМЕТОВ -->
+  <div id="screenCourses" class="screen">
+    <div class="section-title">Твои предметы</div>
+    <div class="card" id="coursesContainer"></div>
+  </div>
+
+  <!-- ЭКРАН 4: СПИСОК ЗАДАНИЙ (ТЕМ) -->
+  <div id="screenTopics" class="screen">
+    <div class="section-title" id="topicsTitle">Задания курса</div>
+    <div class="card" id="topicsContainer"></div>
+    <button class="btn-sub" onclick="openScreen('screenCourses')">‹ Назад к курсам</button>
+  </div>
+
+  <!-- ЭКРАН 5: ДЕТАЛИ И СДАЧА РАБОТЫ -->
+  <div id="screenDetails" class="screen">
+    <div class="section-title">Материалы преподавателя</div>
+    <div class="card" id="filesContainer" style="padding: 6px 14px;"></div>
+
+    <div class="section-title">Твое решение</div>
+    <div class="card" style="padding: 16px;">
+      <textarea id="replyTextInput" class="input-field" placeholder="Комментарий к ответу (необязательно)"></textarea>
+
+      <div class="upload-box" id="uploadBox" onclick="document.getElementById('filePicker').click()">
+        <span style="font-size: 24px;">📎</span>
+        <div id="uploadBoxText" style="margin-top: 6px; font-size: 14px; color: var(--hint);">
+          Нажми, чтобы выбрать файл с решением
+        </div>
+        <div class="file-name" id="selectedFileName"></div>
+      </div>
+      <input type="file" id="filePicker" style="display: none;" onchange="handleFileSelected(event)">
+
+      <button class="btn-main" id="submitWorkBtn" onclick="submitWork()">
+        <span>Отправить на проверку</span>
+      </button>
+    </div>
+    <button class="btn-sub" onclick="openScreen('screenTopics')">‹ Назад к темам</button>
   </div>
 
   <script>
+    // КОНФИГУРАЦИЯ
+    const API_URL = "https://script.google.com/macros/s/AKfycbyM6fNRDAmyTmQRiHhysGLCo3r5Gsyu5CWEQNkTEbYEZnXOSmd33iHXaig4s4Epmb5WDg/exec";
+
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
 
-    // Подставляем имя из Telegram
-    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-      document.getElementById('userName').textContent = `Привет, ${tg.initDataUnsafe.user.first_name}!`;
+    const chatId = tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "debug_user";
+
+    let state = {
+      courses: [],
+      currentCourseId: null,
+      currentTopicId: null,
+      selectedFileBlob: null,
+      selectedFileName: ""
+    };
+
+    // Навигация
+    function openScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+
+      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+
+      // Кнопка «Назад» внутри интерфейса Telegram
+      if (screenId === 'screenCourses' || screenId === 'screenLogin') {
+        tg.BackButton.hide();
+      } else {
+        tg.BackButton.show();
+        tg.BackButton.onClick(() => {
+          if (screenId === 'screenDetails') openScreen('screenTopics');
+          else if (screenId === 'screenTopics') openScreen('screenCourses');
+        });
+      }
     }
 
-    // Отправка команды боту и закрытие окна
-    function sendAction(actionName) {
-      tg.sendData(JSON.stringify({ action: actionName }));
+    // Инициализация при открытии
+    async function initApp() {
+      openScreen('screenLoading');
+      try {
+        const resp = await fetch(`${API_URL}?action=init&chatId=${chatId}`);
+        const data = await resp.json();
+
+        if (data.loggedIn) {
+          document.getElementById('userNameLabel').textContent = data.login;
+          document.getElementById('userStatusLabel').textContent = 'В сети';
+          document.getElementById('avatarLetter').textContent = data.login[0].toUpperCase();
+          renderCourses(data.courses);
+          openScreen('screenCourses');
+        } else {
+          openScreen('screenLogin');
+        }
+      } catch (err) {
+        document.getElementById('userStatusLabel').textContent = 'Ошибка связи';
+        alert('Не удалось связаться с сервером. Проверь API_URL.');
+      }
     }
+
+    // Вход в аккаунт
+    async function performLogin() {
+      const login = document.getElementById('loginInput').value.trim();
+      const password = document.getElementById('passwordInput').value.trim();
+      const btn = document.getElementById('loginBtn');
+
+      if (!login || !password) {
+        alert('Заполни логин и пароль.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<div class="loader"></div> Проверяю данные...';
+
+      try {
+        const resp = await fetch(`${API_URL}?action=login&chatId=${chatId}&login=${encodeURIComponent(login)}&password=${encodeURIComponent(password)}`);
+        const data = await resp.json();
+
+        if (data.success) {
+          document.getElementById('userNameLabel').textContent = data.login;
+          document.getElementById('userStatusLabel').textContent = 'В сети';
+          document.getElementById('avatarLetter').textContent = data.login[0].toUpperCase();
+          renderCourses(data.courses);
+          openScreen('screenCourses');
+        } else {
+          alert('Ошибка входа: ' + (data.error || 'Проверь логин и пароль'));
+        }
+      } catch (e) {
+        alert('Сбой соединения.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Войти в аккаунт';
+      }
+    }
+
+    // Отрисовка курсов
+    function renderCourses(courses) {
+      state.courses = courses;
+      const container = document.getElementById('coursesContainer');
+      container.innerHTML = '';
+
+      if (!courses || courses.length === 0) {
+        container.innerHTML = '<div style="padding: 16px; color: var(--hint); text-align: center;">Курсы не найдены.</div>';
+        return;
+      }
+
+      courses.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        div.innerHTML = `<span class="item-title">${c.fullname}</span><span class="arrow">›</span>`;
+        div.onclick = () => loadTopics(c.id, c.fullname);
+        container.appendChild(div);
+      });
+    }
+
+    // Загрузка тем
+    async function loadTopics(courseId, courseName) {
+      state.currentCourseId = courseId;
+      document.getElementById('topicsTitle').textContent = courseName;
+      openScreen('screenLoading');
+
+      try {
+        const resp = await fetch(`${API_URL}?action=topics&chatId=${chatId}&courseId=${courseId}`);
+        const data = await resp.json();
+
+        const container = document.getElementById('topicsContainer');
+        container.innerHTML = '';
+
+        if (data.topics && data.topics.length > 0) {
+          data.topics.forEach(t => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.innerHTML = `<span class="item-title">📝 ${t.name}</span><span class="arrow">›</span>`;
+            div.onclick = () => loadTopicDetails(t.id);
+            container.appendChild(div);
+          });
+        } else {
+          container.innerHTML = '<div style="padding: 16px; color: var(--hint); text-align: center;">Нет доступных тем обсуждений.</div>';
+        }
+        openScreen('screenTopics');
+      } catch (e) {
+        alert('Не удалось загрузить темы курса.');
+        openScreen('screenCourses');
+      }
+    }
+
+    // Загрузка деталей темы и файлов
+    async function loadTopicDetails(topicId) {
+      state.currentTopicId = topicId;
+      openScreen('screenLoading');
+
+      try {
+        const resp = await fetch(`${API_URL}?action=topic_details&chatId=${chatId}&topicId=${topicId}`);
+        const data = await resp.json();
+
+        const filesContainer = document.getElementById('filesContainer');
+        filesContainer.innerHTML = '';
+
+        if (data.details.files && data.details.files.length > 0) {
+          data.details.files.forEach(f => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.style.padding = '12px 0';
+            div.innerHTML = `
+              <span class="item-title" style="font-size: 14px;">📄 ${f.name}</span>
+              <button class="header-btn" style="padding: 6px 10px; font-size: 13px;">📥 В чат</button>
+            `;
+            div.querySelector('button').onclick = (e) => {
+              e.stopPropagation();
+              sendTeacherFileToChat(f.url, f.name);
+            };
+            filesContainer.appendChild(div);
+          });
+        } else {
+          filesContainer.innerHTML = '<div style="padding: 10px 0; color: var(--hint); font-size: 14px;">Преподаватель не прикрепил файлов к теме.</div>';
+        }
+
+        // Сброс полей формы сдачи
+        document.getElementById('replyTextInput').value = '';
+        state.selectedFileBlob = null;
+        state.selectedFileName = '';
+        document.getElementById('selectedFileName').textContent = '';
+        document.getElementById('uploadBox').classList.remove('has-file');
+        document.getElementById('uploadBoxText').textContent = 'Нажми, чтобы выбрать файл с решением';
+
+        openScreen('screenDetails');
+      } catch (e) {
+        alert('Не удалось открыть задание.');
+        openScreen('screenTopics');
+      }
+    }
+
+    // Отправка файла преподавателя в личку Telegram
+    async function sendTeacherFileToChat(url, name) {
+      if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+      try {
+        await fetch(`${API_URL}?action=send_file&chatId=${chatId}&fileUrl=${encodeURIComponent(url)}&fileName=${encodeURIComponent(name)}`);
+        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        alert(`Файл «${name}» отправлен тебе в диалог с ботом!`);
+      } catch (e) {
+        alert('Ошибка при отправке файла.');
+      }
+    }
+
+    // Выбор файла решения студента
+    function handleFileSelected(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      state.selectedFileName = file.name;
+      const reader = new FileReader();
+
+      reader.onload = function(event) {
+        state.selectedFileBlob = event.target.result.split(',')[1]; // Чистый base64
+        document.getElementById('selectedFileName').textContent = file.name;
+        document.getElementById('uploadBoxText').textContent = 'Файл выбран:';
+        document.getElementById('uploadBox').classList.add('has-file');
+        if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Сдача работы на портал Moodle
+    async function submitWork() {
+      if (!state.selectedFileBlob) {
+        alert('Пожалуйста, прикрепи файл с выполненным заданием.');
+        return;
+      }
+
+      const text = document.getElementById('replyTextInput').value.trim() || 'Выполненная работа';
+      const btn = document.getElementById('submitWorkBtn');
+
+      btn.disabled = true;
+      btn.innerHTML = '<div class="loader"></div> Отправляю в Moodle...';
+
+      const payload = {
+        action: 'submit_work',
+        chatId: chatId,
+        topicId: state.currentTopicId,
+        text: text,
+        fileName: state.selectedFileName,
+        fileBase64: state.selectedFileBlob
+      };
+
+      try {
+        const resp = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+
+        const res = await resp.json();
+        if (res.success) {
+          if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+          alert('Работа успешно сдана на портал РЭУ!');
+          openScreen('screenTopics');
+        } else {
+          alert('Ошибка сдачи: ' + res.error);
+        }
+      } catch (e) {
+        alert('Сбой при отправке работы.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Отправить на проверку</span>';
+      }
+    }
+
+    // Кнопка обновления
+    function refreshCourses() {
+      initApp();
+    }
+
+    // Старт
+    initApp();
   </script>
 </body>
 </html>
