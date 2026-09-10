@@ -46,6 +46,7 @@
       user-select: none;
     }
 
+    /* ШАПКА */
     .top-bar {
       display: flex;
       align-items: center;
@@ -58,6 +59,15 @@
       display: flex;
       align-items: center;
       gap: 12px;
+      cursor: pointer;
+      padding: 4px 8px 4px 4px;
+      border-radius: 18px;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+
+    .user-info:active {
+      background: rgba(125, 125, 125, 0.08);
+      transform: scale(0.97);
     }
 
     .avatar {
@@ -74,7 +84,21 @@
       box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
     }
 
-    .user-name { font-size: 17px; font-weight: 700; margin: 0; }
+    .user-name {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .user-name-arrow {
+      font-size: 14px;
+      color: var(--hint);
+      opacity: 0.7;
+    }
+
     .user-status { font-size: 13px; color: var(--hint); margin: 2px 0 0 0; }
 
     .header-actions {
@@ -99,8 +123,8 @@
     }
 
     .header-btn:active { transform: scale(0.94); opacity: 0.8; }
-    .header-btn.danger { color: var(--danger); }
 
+    /* ЭКРАНЫ */
     .screen { 
       display: none; 
       opacity: 0; 
@@ -123,6 +147,7 @@
       letter-spacing: 0.5px;
     }
 
+    /* КАРТОЧКИ И СПИСКИ */
     .card {
       background: var(--card-bg);
       border-radius: 18px;
@@ -163,6 +188,75 @@
 
     .arrow { color: var(--hint); font-size: 18px; font-weight: 600; opacity: 0.6; }
 
+    /* ПРОФИЛЬ */
+    .profile-hero {
+      padding: 28px 20px;
+      text-align: center;
+      background: linear-gradient(135deg, rgba(46, 166, 255, 0.08), rgba(88, 86, 214, 0.08));
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .profile-avatar-big {
+      width: 76px;
+      height: 76px;
+      border-radius: 24px;
+      background: var(--accent-gradient);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 800;
+      box-shadow: 0 8px 24px rgba(0, 122, 255, 0.3);
+      margin-bottom: 12px;
+    }
+
+    .profile-name {
+      font-size: 20px;
+      font-weight: 800;
+      margin: 0;
+      letter-spacing: -0.3px;
+    }
+
+    .profile-sub {
+      font-size: 13px;
+      color: var(--hint);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    .profile-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: rgba(46, 166, 255, 0.15);
+      color: var(--btn);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      border-bottom: 0.5px solid var(--separator);
+      font-size: 14px;
+    }
+
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: var(--hint); font-weight: 500; }
+    .info-value { font-weight: 600; color: var(--text); }
+
+    /* ПОЛЯ ВВОДА И КНОПКИ */
     .input-field {
       width: 100%;
       padding: 14px 16px;
@@ -205,6 +299,17 @@
     .btn-main:active { transform: scale(0.97); }
     .btn-main:disabled { opacity: 0.5; cursor: not-allowed; }
 
+    .btn-danger {
+      background: rgba(255, 69, 58, 0.12);
+      color: var(--danger);
+      box-shadow: none;
+      border: 1px solid rgba(255, 69, 58, 0.2);
+    }
+
+    .btn-danger:active {
+      background: rgba(255, 69, 58, 0.2);
+    }
+
     .btn-sub {
       background: none;
       border: none;
@@ -235,6 +340,7 @@
 
     .file-name { font-weight: 600; color: var(--text); margin-top: 8px; font-size: 14px; word-break: break-all; }
 
+    /* БРС БАННЕР */
     .brs-banner {
       padding: 24px 20px;
       text-align: center;
@@ -332,16 +438,18 @@
 
   <!-- ШАПКА -->
   <div class="top-bar">
-    <div class="user-info">
+    <div class="user-info" id="userInfoHeader" onclick="openProfile()">
       <div class="avatar" id="avatarLetter">🎓</div>
       <div>
-        <div class="user-name" id="userNameLabel">Moodle РЭУ</div>
+        <div class="user-name">
+          <span id="userNameLabel">Moodle РЭУ</span>
+          <span class="user-name-arrow" id="profileChevron" style="display: none;">›</span>
+        </div>
         <div class="user-status" id="userStatusLabel">Синхронизация...</div>
       </div>
     </div>
     <div class="header-actions">
       <button class="header-btn" onclick="refreshCourses()">🔄</button>
-      <button class="header-btn danger" id="logoutHeaderBtn" style="display: none;" onclick="performLogout()">🚪</button>
     </div>
   </div>
 
@@ -372,7 +480,48 @@
     <div class="card" id="coursesContainer"></div>
   </div>
 
-  <!-- ЭКРАН 4: СПИСОК ЗАДАНИЙ -->
+  <!-- ЭКРАН 4: ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ -->
+  <div id="screenProfile" class="screen">
+    <div class="profile-hero">
+      <div class="profile-avatar-big" id="profileBigAvatar">🎓</div>
+      <div class="profile-name" id="profileFullName">Студент</div>
+      <div class="profile-sub" id="profileTgUsername">@username</div>
+      <div class="profile-badge">🎓 РЭУ им. Г.В. Плеханова</div>
+    </div>
+
+    <div class="section-title">Учетная запись Moodle</div>
+    <div class="card">
+      <div class="info-row">
+        <span class="info-label">Логин study.rea.ru</span>
+        <span class="info-value" id="profileMoodleLogin">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Статус сессии</span>
+        <span class="info-value" style="color: var(--success); display: flex; align-items: center; gap: 4px;">
+          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></span> 
+          В сети
+        </span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Доступных предметов</span>
+        <span class="info-value" id="profileCoursesCount">0</span>
+      </div>
+    </div>
+
+    <div class="section-title">Управление</div>
+    <div class="card" style="padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+      <button class="btn-main" style="background: var(--card-bg); border: 1px solid var(--card-border); color: var(--btn);" onclick="refreshCourses()">
+        <span>🔄 Обновить данные предметов</span>
+      </button>
+      <button class="btn-main btn-danger" onclick="performLogout()">
+        <span>🚪 Выйти из аккаунта</span>
+      </button>
+    </div>
+
+    <button class="btn-sub" onclick="openScreen('screenCourses')">‹ Назад к предметам</button>
+  </div>
+
+  <!-- ЭКРАН 5: СПИСОК ЗАДАНИЙ -->
   <div id="screenTopics" class="screen">
     <div class="card" style="margin-bottom: 14px; cursor: pointer;" onclick="loadCourseGrades()">
       <div class="list-item" style="border: none;">
@@ -389,7 +538,7 @@
     <button class="btn-sub" onclick="openScreen('screenCourses')">‹ Назад к предметам</button>
   </div>
 
-  <!-- ЭКРАН 5: ЖУРНАЛ ОЦЕНОК И БРС -->
+  <!-- ЭКРАН 6: ЖУРНАЛ ОЦЕНОК И БРС -->
   <div id="screenGrades" class="screen">
     <div class="brs-banner">
       <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.7; font-weight: 700;">
@@ -420,7 +569,7 @@
     <button class="btn-sub" onclick="openScreen('screenTopics')">‹ Назад к курсу</button>
   </div>
 
-  <!-- ЭКРАН 6: ДЕТАЛИ И СДАЧА РАБОТЫ -->
+  <!-- ЭКРАН 7: ДЕТАЛИ И СДАЧА РАБОТЫ -->
   <div id="screenDetails" class="screen">
     <div class="section-title">Материалы преподавателя</div>
     <div class="card" id="filesContainer" style="padding: 6px 16px;"></div>
@@ -478,7 +627,8 @@
       currentTopicId: null,
       currentScreen: "screenLoading",
       selectedFileBlob: null,
-      selectedFileName: ""
+      selectedFileName: "",
+      userLogin: ""
     };
 
     function triggerHaptic(type) {
@@ -522,7 +672,9 @@
 
     tg.BackButton.onClick(() => {
       triggerHaptic('light');
-      if (state.currentScreen === 'screenDetails' || state.currentScreen === 'screenGrades') {
+      if (state.currentScreen === 'screenProfile') {
+        openScreen('screenCourses');
+      } else if (state.currentScreen === 'screenDetails' || state.currentScreen === 'screenGrades') {
         openScreen('screenTopics');
       } else if (state.currentScreen === 'screenTopics') {
         openScreen('screenCourses');
@@ -533,6 +685,24 @@
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
+    }
+
+    function openProfile() {
+      if (!state.userLogin) return;
+      
+      const tgUser = tg.initDataUnsafe && tg.initDataUnsafe.user;
+      const firstName = tgUser ? tgUser.first_name : '';
+      const lastName = tgUser ? (tgUser.last_name || '') : '';
+      const displayName = (firstName + ' ' + lastName).trim() || state.userLogin;
+      const username = tgUser && tgUser.username ? `@${tgUser.username}` : 'Пользователь Telegram';
+
+      document.getElementById('profileFullName').textContent = displayName;
+      document.getElementById('profileTgUsername').textContent = username;
+      document.getElementById('profileBigAvatar').textContent = state.userLogin[0].toUpperCase();
+      document.getElementById('profileMoodleLogin').textContent = state.userLogin;
+      document.getElementById('profileCoursesCount').textContent = `${state.courses.length} дисциплин`;
+
+      openScreen('screenProfile');
     }
 
     async function initApp() {
@@ -548,14 +718,16 @@
         }
 
         if (data.loggedIn) {
+          state.userLogin = data.login;
           document.getElementById('userNameLabel').textContent = data.login;
-          document.getElementById('userStatusLabel').textContent = 'В сети';
+          document.getElementById('userStatusLabel').textContent = 'В сети (профиль)';
+          document.getElementById('profileChevron').style.display = 'inline';
           document.getElementById('avatarLetter').textContent = data.login[0].toUpperCase();
-          document.getElementById('logoutHeaderBtn').style.display = 'flex';
           renderCourses(data.courses);
           openScreen('screenCourses');
         } else {
-          document.getElementById('logoutHeaderBtn').style.display = 'none';
+          state.userLogin = '';
+          document.getElementById('profileChevron').style.display = 'none';
           openScreen('screenLogin');
         }
       } catch (err) {
@@ -587,10 +759,11 @@
             authToken = data.auth;
             safeStorage.set('moodle_auth_token', data.auth);
           }
+          state.userLogin = data.login;
           document.getElementById('userNameLabel').textContent = data.login;
-          document.getElementById('userStatusLabel').textContent = 'В сети';
+          document.getElementById('userStatusLabel').textContent = 'В сети (профиль)';
+          document.getElementById('profileChevron').style.display = 'inline';
           document.getElementById('avatarLetter').textContent = data.login[0].toUpperCase();
-          document.getElementById('logoutHeaderBtn').style.display = 'flex';
           renderCourses(data.courses);
           openScreen('screenCourses');
         } else {
@@ -619,10 +792,12 @@
 
       authToken = '';
       safeStorage.set('moodle_auth_token', '');
+      state.userLogin = '';
+      state.courses = [];
       document.getElementById('userNameLabel').textContent = 'Moodle РЭУ';
       document.getElementById('userStatusLabel').textContent = 'Не авторизован';
+      document.getElementById('profileChevron').style.display = 'none';
       document.getElementById('avatarLetter').textContent = '🎓';
-      document.getElementById('logoutHeaderBtn').style.display = 'none';
       document.getElementById('loginInput').value = '';
       document.getElementById('passwordInput').value = '';
 
@@ -822,8 +997,8 @@
       }
     }
 
-    function handleFileSelected(e) {
-      const file = e.target.files[0];
+    function handleFileSelected(event) {
+      const file = event.target.files[0];
       if (!file) return;
 
       if (file.size > 15 * 1024 * 1024) {
@@ -835,8 +1010,8 @@
       state.selectedFileName = file.name;
       const reader = new FileReader();
 
-      reader.onload = function(event) {
-        state.selectedFileBlob = event.target.result.split(',')[1];
+      reader.onload = function(e) {
+        state.selectedFileBlob = e.target.result.split(',')[1];
         document.getElementById('selectedFileName').textContent = file.name;
         document.getElementById('uploadBoxText').textContent = 'Файл прикреплен:';
         document.getElementById('uploadBox').classList.add('has-file');
