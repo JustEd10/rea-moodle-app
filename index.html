@@ -302,13 +302,15 @@
   </div>
 
   <script>
+    // Вставь сюда актуальный URL своего развертывания веб-приложения Google Apps Script
     const API_URL = "https://script.google.com/macros/s/AKfycbyM6fNRDAmyTmQRiHhysGLCo3r5Gsyu5CWEQNkTEbYEZnXOSmd33iHXaig4s4Epmb5WDg/exec";
 
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
 
-    const chatId = tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "debug_user";
+    // Защищенная строка авторизации от Telegram
+    const initData = tg.initData;
 
     let state = {
       courses: [],
@@ -319,7 +321,14 @@
       selectedFileName: ""
     };
 
-    // Надежная навигация без утечек слушателей
+    function notify(message) {
+      if (tg.showAlert) {
+        tg.showAlert(message);
+      } else {
+        alert(message);
+      }
+    }
+
     function openScreen(screenId) {
       state.currentScreen = screenId;
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -334,7 +343,6 @@
       }
     }
 
-    // Один постоянный обработчик на системную кнопку «Назад»
     tg.BackButton.onClick(() => {
       if (state.currentScreen === 'screenDetails' || state.currentScreen === 'screenGrades') {
         openScreen('screenTopics');
@@ -352,7 +360,7 @@
     async function initApp() {
       openScreen('screenLoading');
       try {
-        const resp = await fetch(`${API_URL}?action=init&chatId=${chatId}`);
+        const resp = await fetch(`${API_URL}?action=init&initData=${encodeURIComponent(initData)}`);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
 
@@ -367,7 +375,7 @@
         }
       } catch (err) {
         document.getElementById('userStatusLabel').textContent = 'Ошибка связи';
-        alert('Не удалось связаться с сервером. Попробуй нажать кнопку «Обновить».');
+        notify('Не удалось связаться с сервером. Нажми «Обновить».');
       }
     }
 
@@ -377,7 +385,7 @@
       const btn = document.getElementById('loginBtn');
 
       if (!login || !password) {
-        alert('Заполни логин и пароль.');
+        notify('Заполни логин и пароль.');
         return;
       }
 
@@ -385,7 +393,7 @@
       btn.innerHTML = '<div class="loader"></div> Проверяю данные...';
 
       try {
-        const resp = await fetch(`${API_URL}?action=login&chatId=${chatId}&login=${encodeURIComponent(login)}&password=${encodeURIComponent(password)}`);
+        const resp = await fetch(`${API_URL}?action=login&initData=${encodeURIComponent(initData)}&login=${encodeURIComponent(login)}&password=${encodeURIComponent(password)}`);
         const data = await resp.json();
 
         if (data.success) {
@@ -395,10 +403,10 @@
           renderCourses(data.courses);
           openScreen('screenCourses');
         } else {
-          alert('Ошибка входа: ' + (data.error || 'Проверь логин и пароль'));
+          notify('Ошибка входа: ' + (data.error || 'Проверь логин и пароль'));
         }
       } catch (e) {
-        alert('Сбой соединения при авторизации.');
+        notify('Сбой соединения при авторизации.');
       } finally {
         btn.disabled = false;
         btn.innerHTML = 'Войти в аккаунт';
@@ -430,7 +438,7 @@
       openScreen('screenLoading');
 
       try {
-        const resp = await fetch(`${API_URL}?action=topics&chatId=${chatId}&courseId=${courseId}`);
+        const resp = await fetch(`${API_URL}?action=topics&initData=${encodeURIComponent(initData)}&courseId=${courseId}`);
         const data = await resp.json();
 
         const container = document.getElementById('topicsContainer');
@@ -449,7 +457,7 @@
         }
         openScreen('screenTopics');
       } catch (e) {
-        alert('Не удалось загрузить темы курса.');
+        notify('Не удалось загрузить темы курса.');
         openScreen('screenCourses');
       }
     }
@@ -457,7 +465,7 @@
     async function loadCourseGrades() {
       openScreen('screenLoading');
       try {
-        const resp = await fetch(`${API_URL}?action=course_grades&chatId=${chatId}&courseId=${state.currentCourseId}`);
+        const resp = await fetch(`${API_URL}?action=course_grades&initData=${encodeURIComponent(initData)}&courseId=${state.currentCourseId}`);
         const data = await resp.json();
 
         if (data.success) {
@@ -512,11 +520,11 @@
 
           openScreen('screenGrades');
         } else {
-          alert('Не удалось прочитать оценки: ' + data.error);
+          notify('Не удалось прочитать оценки: ' + data.error);
           openScreen('screenTopics');
         }
       } catch (e) {
-        alert('Ошибка связи с сервером при запросе оценок.');
+        notify('Ошибка связи с сервером при запросе оценок.');
         openScreen('screenTopics');
       }
     }
@@ -526,7 +534,7 @@
       openScreen('screenLoading');
 
       try {
-        const resp = await fetch(`${API_URL}?action=topic_details&chatId=${chatId}&topicId=${topicId}`);
+        const resp = await fetch(`${API_URL}?action=topic_details&initData=${encodeURIComponent(initData)}&topicId=${topicId}`);
         const data = await resp.json();
 
         const filesContainer = document.getElementById('filesContainer');
@@ -560,7 +568,7 @@
 
         openScreen('screenDetails');
       } catch (e) {
-        alert('Не удалось открыть задание.');
+        notify('Не удалось открыть задание.');
         openScreen('screenTopics');
       }
     }
@@ -568,11 +576,11 @@
     async function sendTeacherFileToChat(url, name) {
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
       try {
-        await fetch(`${API_URL}?action=send_file&chatId=${chatId}&fileUrl=${encodeURIComponent(url)}&fileName=${encodeURIComponent(name)}`);
+        await fetch(`${API_URL}?action=send_file&initData=${encodeURIComponent(initData)}&fileUrl=${encodeURIComponent(url)}&fileName=${encodeURIComponent(name)}`);
         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-        alert(`Файл «${name}» отправлен тебе в диалог с ботом!`);
+        notify(`Файл «${name}» отправлен в чат-бот!`);
       } catch (e) {
-        alert('Ошибка при отправке файла в чат.');
+        notify('Ошибка при отправке файла в чат.');
       }
     }
 
@@ -580,9 +588,8 @@
       const file = e.target.files[0];
       if (!file) return;
 
-      // Ограничение по размеру (макс 20 МБ)
-      if (file.size > 20 * 1024 * 1024) {
-        alert('Файл слишком большой. Максимальный размер: 20 МБ.');
+      if (file.size > 15 * 1024 * 1024) {
+        notify('Файл больше 15 МБ. Сожми его или отправь напрямую через бота.');
         return;
       }
 
@@ -601,7 +608,7 @@
 
     async function submitWork() {
       if (!state.selectedFileBlob) {
-        alert('Пожалуйста, прикрепи файл с решением.');
+        notify('Пожалуйста, выбери файл с решением.');
         return;
       }
 
@@ -613,7 +620,7 @@
 
       const payload = {
         action: 'submit_work',
-        chatId: chatId,
+        initData: initData,
         topicId: state.currentTopicId,
         text: text,
         fileName: state.selectedFileName,
@@ -630,13 +637,13 @@
         const res = await resp.json();
         if (res.success) {
           if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-          alert('Работа успешно сдана на портал РЭУ!');
+          notify('Работа успешно сдана на портал РЭУ!');
           openScreen('screenTopics');
         } else {
-          alert('Ошибка сдачи: ' + res.error);
+          notify('Ошибка сдачи: ' + res.error);
         }
       } catch (e) {
-        alert('Сбой при отправке работы. Проверь соединение.');
+        notify('Сбой при отправке работы. Проверь сеть.');
       } finally {
         btn.disabled = false;
         btn.innerHTML = '<span>Отправить на проверку</span>';
