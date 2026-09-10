@@ -16,6 +16,7 @@
       --separator: rgba(60, 60, 67, 0.12);
       --success: #34c759;
       --danger: #ff3b30;
+      --warning: #ff9f0a;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -28,7 +29,6 @@
       color: var(--text);
     }
 
-    /* Навигация и шапка */
     .top-bar {
       display: flex;
       align-items: center;
@@ -69,7 +69,6 @@
       cursor: pointer;
     }
 
-    /* Экраны */
     .screen { display: none; animation: fadeIn 0.2s ease-in-out; }
     .screen.active { display: block; }
 
@@ -78,7 +77,6 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Карточки */
     .section-title {
       font-size: 13px;
       text-transform: uppercase;
@@ -118,7 +116,6 @@
 
     .arrow { color: var(--hint); font-size: 18px; }
 
-    /* Поля ввода */
     .input-field {
       width: 100%;
       padding: 12px 14px;
@@ -139,7 +136,6 @@
       font-family: inherit;
     }
 
-    /* Кнопки */
     .btn-main {
       width: 100%;
       padding: 14px;
@@ -169,7 +165,6 @@
       margin-top: 4px;
     }
 
-    /* Загрузка файла */
     .upload-box {
       border: 2px dashed var(--separator);
       border-radius: 12px;
@@ -192,7 +187,6 @@
       word-break: break-all;
     }
 
-    /* Индикатор загрузки */
     .loader {
       display: inline-block;
       width: 22px;
@@ -214,7 +208,7 @@
 </head>
 <body>
 
-  <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
+  <!-- ШАПКА -->
   <div class="top-bar">
     <div class="user-info">
       <div class="avatar" id="avatarLetter">U</div>
@@ -230,7 +224,7 @@
   <div id="screenLoading" class="screen active">
     <div class="spinner-center">
       <div class="loader" style="border-top-color: var(--btn); border-color: rgba(0,0,0,0.1);"></div>
-      <p style="margin-top: 14px;">Синхронизация с Moodle...</p>
+      <p style="margin-top: 14px;">Синхронизация с порталом РЭУ...</p>
     </div>
   </div>
 
@@ -250,14 +244,39 @@
     <div class="card" id="coursesContainer"></div>
   </div>
 
-  <!-- ЭКРАН 4: СПИСОК ЗАДАНИЙ (ТЕМ) -->
+  <!-- ЭКРАН 4: СПИСОК ЗАДАНИЙ -->
   <div id="screenTopics" class="screen">
+    <div class="card" style="margin-bottom: 12px; cursor: pointer;" onclick="loadCourseGrades()">
+      <div class="list-item" style="border: none;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 20px;">📊</span>
+          <span style="font-weight: 600;">Журнал оценок и БРС</span>
+        </div>
+        <span class="arrow">›</span>
+      </div>
+    </div>
+
     <div class="section-title" id="topicsTitle">Задания курса</div>
     <div class="card" id="topicsContainer"></div>
     <button class="btn-sub" onclick="openScreen('screenCourses')">‹ Назад к курсам</button>
   </div>
 
-  <!-- ЭКРАН 5: ДЕТАЛИ И СДАЧА РАБОТЫ -->
+  <!-- ЭКРАН 5: ЖУРНАЛ ОЦЕНОК И БРС -->
+  <div id="screenGrades" class="screen">
+    <div class="card" style="padding: 20px; text-align: center; background: linear-gradient(135deg, #1c1c1e, #2c2c2e); color: #fff;">
+      <div style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7;">Текущий балл БРС</div>
+      <div id="gradesTotalNum" style="font-size: 42px; font-weight: 800; margin: 8px 0;">0</div>
+      <div id="gradesStatusBadge" style="display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; background: rgba(255,255,255,0.15);">
+        Считаем...
+      </div>
+    </div>
+
+    <div class="section-title">История заданий и оценок</div>
+    <div class="card" id="gradesListContainer"></div>
+    <button class="btn-sub" onclick="openScreen('screenTopics')">‹ Назад к заданиям</button>
+  </div>
+
+  <!-- ЭКРАН 6: ДЕТАЛИ И СДАЧА РАБОТЫ -->
   <div id="screenDetails" class="screen">
     <div class="section-title">Материалы преподавателя</div>
     <div class="card" id="filesContainer" style="padding: 6px 14px;"></div>
@@ -283,7 +302,6 @@
   </div>
 
   <script>
-    // КОНФИГУРАЦИЯ
     const API_URL = "https://script.google.com/macros/s/AKfycbyM6fNRDAmyTmQRiHhysGLCo3r5Gsyu5CWEQNkTEbYEZnXOSmd33iHXaig4s4Epmb5WDg/exec";
 
     const tg = window.Telegram.WebApp;
@@ -296,34 +314,46 @@
       courses: [],
       currentCourseId: null,
       currentTopicId: null,
+      currentScreen: "screenLoading",
       selectedFileBlob: null,
       selectedFileName: ""
     };
 
-    // Навигация
+    // Надежная навигация без утечек слушателей
     function openScreen(screenId) {
+      state.currentScreen = screenId;
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(screenId).classList.add('active');
 
       if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
 
-      // Кнопка «Назад» внутри интерфейса Telegram
       if (screenId === 'screenCourses' || screenId === 'screenLogin') {
         tg.BackButton.hide();
       } else {
         tg.BackButton.show();
-        tg.BackButton.onClick(() => {
-          if (screenId === 'screenDetails') openScreen('screenTopics');
-          else if (screenId === 'screenTopics') openScreen('screenCourses');
-        });
       }
     }
 
-    // Инициализация при открытии
+    // Один постоянный обработчик на системную кнопку «Назад»
+    tg.BackButton.onClick(() => {
+      if (state.currentScreen === 'screenDetails' || state.currentScreen === 'screenGrades') {
+        openScreen('screenTopics');
+      } else if (state.currentScreen === 'screenTopics') {
+        openScreen('screenCourses');
+      }
+    });
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
     async function initApp() {
       openScreen('screenLoading');
       try {
         const resp = await fetch(`${API_URL}?action=init&chatId=${chatId}`);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
 
         if (data.loggedIn) {
@@ -337,11 +367,10 @@
         }
       } catch (err) {
         document.getElementById('userStatusLabel').textContent = 'Ошибка связи';
-        alert('Не удалось связаться с сервером. Проверь API_URL.');
+        alert('Не удалось связаться с сервером. Попробуй нажать кнопку «Обновить».');
       }
     }
 
-    // Вход в аккаунт
     async function performLogin() {
       const login = document.getElementById('loginInput').value.trim();
       const password = document.getElementById('passwordInput').value.trim();
@@ -369,14 +398,13 @@
           alert('Ошибка входа: ' + (data.error || 'Проверь логин и пароль'));
         }
       } catch (e) {
-        alert('Сбой соединения.');
+        alert('Сбой соединения при авторизации.');
       } finally {
         btn.disabled = false;
         btn.innerHTML = 'Войти в аккаунт';
       }
     }
 
-    // Отрисовка курсов
     function renderCourses(courses) {
       state.courses = courses;
       const container = document.getElementById('coursesContainer');
@@ -390,13 +418,12 @@
       courses.forEach(c => {
         const div = document.createElement('div');
         div.className = 'list-item';
-        div.innerHTML = `<span class="item-title">${c.fullname}</span><span class="arrow">›</span>`;
+        div.innerHTML = `<span class="item-title">${escapeHtml(c.fullname)}</span><span class="arrow">›</span>`;
         div.onclick = () => loadTopics(c.id, c.fullname);
         container.appendChild(div);
       });
     }
 
-    // Загрузка тем
     async function loadTopics(courseId, courseName) {
       state.currentCourseId = courseId;
       document.getElementById('topicsTitle').textContent = courseName;
@@ -413,7 +440,7 @@
           data.topics.forEach(t => {
             const div = document.createElement('div');
             div.className = 'list-item';
-            div.innerHTML = `<span class="item-title">📝 ${t.name}</span><span class="arrow">›</span>`;
+            div.innerHTML = `<span class="item-title">📝 ${escapeHtml(t.name)}</span><span class="arrow">›</span>`;
             div.onclick = () => loadTopicDetails(t.id);
             container.appendChild(div);
           });
@@ -427,7 +454,73 @@
       }
     }
 
-    // Загрузка деталей темы и файлов
+    async function loadCourseGrades() {
+      openScreen('screenLoading');
+      try {
+        const resp = await fetch(`${API_URL}?action=course_grades&chatId=${chatId}&courseId=${state.currentCourseId}`);
+        const data = await resp.json();
+
+        if (data.success) {
+          const total = parseFloat(data.total) || 0;
+          const max = parseFloat(data.max) || 100;
+          const percent = max > 0 ? (total / max) * 100 : 0;
+
+          document.getElementById('gradesTotalNum').textContent = data.total;
+
+          const badge = document.getElementById('gradesStatusBadge');
+          if (percent >= 85) {
+            badge.textContent = "Отлично / Автомат 🔥";
+            badge.style.background = "#34c759";
+          } else if (percent >= 60) {
+            badge.textContent = "Зачет набран ✅";
+            badge.style.background = "#30d158";
+          } else {
+            const need = Math.max(0, (max * 0.6) - total).toFixed(1);
+            badge.textContent = `До зачета нужно еще ${need} б.`;
+            badge.style.background = "#ff9f0a";
+          }
+
+          const container = document.getElementById('gradesListContainer');
+          container.innerHTML = '';
+
+          if (data.items && data.items.length > 0) {
+            data.items.forEach(it => {
+              const div = document.createElement('div');
+              div.className = 'list-item';
+              div.style.flexDirection = 'column';
+              div.style.alignItems = 'flex-start';
+              div.style.gap = '4px';
+
+              const feedbackHtml = it.feedback 
+                ? `<div style="font-size: 13px; color: var(--hint); background: rgba(0,0,0,0.03); padding: 6px 10px; border-radius: 8px; width: 100%; margin-top: 4px;">💬 ${escapeHtml(it.feedback)}</div>` 
+                : '';
+
+              const gradeColor = it.grade === "Не оценено" ? "var(--hint)" : "var(--btn)";
+
+              div.innerHTML = `
+                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                  <span class="item-title" style="font-size: 14px;">${escapeHtml(it.name)}</span>
+                  <span style="font-weight: 700; color: ${gradeColor}; font-size: 14px;">${escapeHtml(it.grade)}</span>
+                </div>
+                ${feedbackHtml}
+              `;
+              container.appendChild(div);
+            });
+          } else {
+            container.innerHTML = '<div style="padding: 16px; color: var(--hint); text-align: center;">В журнале пока нет данных.</div>';
+          }
+
+          openScreen('screenGrades');
+        } else {
+          alert('Не удалось прочитать оценки: ' + data.error);
+          openScreen('screenTopics');
+        }
+      } catch (e) {
+        alert('Ошибка связи с сервером при запросе оценок.');
+        openScreen('screenTopics');
+      }
+    }
+
     async function loadTopicDetails(topicId) {
       state.currentTopicId = topicId;
       openScreen('screenLoading');
@@ -445,7 +538,7 @@
             div.className = 'list-item';
             div.style.padding = '12px 0';
             div.innerHTML = `
-              <span class="item-title" style="font-size: 14px;">📄 ${f.name}</span>
+              <span class="item-title" style="font-size: 14px;">📄 ${escapeHtml(f.name)}</span>
               <button class="header-btn" style="padding: 6px 10px; font-size: 13px;">📥 В чат</button>
             `;
             div.querySelector('button').onclick = (e) => {
@@ -458,7 +551,6 @@
           filesContainer.innerHTML = '<div style="padding: 10px 0; color: var(--hint); font-size: 14px;">Преподаватель не прикрепил файлов к теме.</div>';
         }
 
-        // Сброс полей формы сдачи
         document.getElementById('replyTextInput').value = '';
         state.selectedFileBlob = null;
         state.selectedFileName = '';
@@ -473,7 +565,6 @@
       }
     }
 
-    // Отправка файла преподавателя в личку Telegram
     async function sendTeacherFileToChat(url, name) {
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
       try {
@@ -481,20 +572,25 @@
         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         alert(`Файл «${name}» отправлен тебе в диалог с ботом!`);
       } catch (e) {
-        alert('Ошибка при отправке файла.');
+        alert('Ошибка при отправке файла в чат.');
       }
     }
 
-    // Выбор файла решения студента
     function handleFileSelected(e) {
       const file = e.target.files[0];
       if (!file) return;
+
+      // Ограничение по размеру (макс 20 МБ)
+      if (file.size > 20 * 1024 * 1024) {
+        alert('Файл слишком большой. Максимальный размер: 20 МБ.');
+        return;
+      }
 
       state.selectedFileName = file.name;
       const reader = new FileReader();
 
       reader.onload = function(event) {
-        state.selectedFileBlob = event.target.result.split(',')[1]; // Чистый base64
+        state.selectedFileBlob = event.target.result.split(',')[1];
         document.getElementById('selectedFileName').textContent = file.name;
         document.getElementById('uploadBoxText').textContent = 'Файл выбран:';
         document.getElementById('uploadBox').classList.add('has-file');
@@ -503,10 +599,9 @@
       reader.readAsDataURL(file);
     }
 
-    // Сдача работы на портал Moodle
     async function submitWork() {
       if (!state.selectedFileBlob) {
-        alert('Пожалуйста, прикрепи файл с выполненным заданием.');
+        alert('Пожалуйста, прикрепи файл с решением.');
         return;
       }
 
@@ -541,19 +636,17 @@
           alert('Ошибка сдачи: ' + res.error);
         }
       } catch (e) {
-        alert('Сбой при отправке работы.');
+        alert('Сбой при отправке работы. Проверь соединение.');
       } finally {
         btn.disabled = false;
         btn.innerHTML = '<span>Отправить на проверку</span>';
       }
     }
 
-    // Кнопка обновления
     function refreshCourses() {
       initApp();
     }
 
-    // Старт
     initApp();
   </script>
 </body>
