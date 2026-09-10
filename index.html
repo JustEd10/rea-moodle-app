@@ -7,16 +7,25 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg: var(--tg-theme-bg-color, #f4f4f7);
-      --card-bg: var(--tg-theme-secondary-bg-color, #ffffff);
-      --text: var(--tg-theme-text-color, #1c1c1e);
-      --hint: var(--tg-theme-hint-color, #8e8e93);
+      --bg: var(--tg-theme-bg-color, #0f1115);
+      --card-bg: var(--tg-theme-secondary-bg-color, #1a1d24);
+      --text: var(--tg-theme-text-color, #ffffff);
+      --hint: var(--tg-theme-hint-color, #8e95a3);
       --btn: var(--tg-theme-button-color, #2ea6ff);
       --btn-text: var(--tg-theme-button-text-color, #ffffff);
-      --separator: rgba(60, 60, 67, 0.12);
+      --separator: rgba(255, 255, 255, 0.08);
+      --card-border: rgba(255, 255, 255, 0.06);
       --success: #34c759;
-      --danger: #ff3b30;
+      --danger: #ff453a;
       --warning: #ff9f0a;
+      --accent-gradient: linear-gradient(135deg, #007aff, #5856d6);
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --separator: rgba(0, 0, 0, 0.08);
+        --card-border: rgba(0, 0, 0, 0.04);
+      }
     }
 
     * { 
@@ -26,9 +35,9 @@
 
     body {
       margin: 0;
-      padding: 14px;
+      padding: 16px;
       padding-top: calc(14px + env(safe-area-inset-top, 0px));
-      padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+      padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg);
       color: var(--text);
@@ -40,184 +49,357 @@
       user-select: none;
     }
 
+    /* ШАПКА */
     .top-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
+      padding: 4px 2px;
     }
 
     .user-info {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
     .avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #007aff, #5856d6);
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: var(--accent-gradient);
       color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 600;
-      font-size: 16px;
+      font-weight: 700;
+      font-size: 17px;
+      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
+      transition: transform 0.2s ease;
     }
 
-    .user-name { font-size: 17px; font-weight: 600; margin: 0; }
-    .user-status { font-size: 13px; color: var(--hint); margin: 0; }
+    .avatar:active { transform: scale(0.95); }
+
+    .user-name { font-size: 17px; font-weight: 700; margin: 0; letter-spacing: -0.2px; }
+    .user-status { font-size: 13px; color: var(--hint); margin: 2px 0 0 0; }
 
     .header-btn {
       background: var(--card-bg);
-      border: none;
-      padding: 8px 12px;
-      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      padding: 8px 14px;
+      border-radius: 12px;
       color: var(--btn);
-      font-size: 14px;
-      font-weight: 500;
+      font-size: 13px;
+      font-weight: 600;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.15s ease, opacity 0.15s ease;
     }
 
-    .screen { display: none; animation: fadeIn 0.2s ease-in-out; }
-    .screen.active { display: block; }
+    .header-btn:active {
+      transform: scale(0.94);
+      opacity: 0.8;
+    }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
+    /* ЭКРАНЫ И ПЕРЕХОДЫ */
+    .screen { 
+      display: none; 
+      opacity: 0; 
+      transform: translateY(10px);
+      transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .screen.active { 
+      display: block; 
+      opacity: 1; 
+      transform: translateY(0);
     }
 
     .section-title {
-      font-size: 13px;
+      font-size: 12px;
       text-transform: uppercase;
       color: var(--hint);
-      margin: 16px 6px 8px 6px;
-      font-weight: 600;
-      letter-spacing: -0.1px;
+      margin: 20px 6px 10px 6px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
     }
 
+    /* КАРТОЧКИ И СПИСКИ */
     .card {
       background: var(--card-bg);
-      border-radius: 14px;
+      border-radius: 18px;
       overflow: hidden;
-      margin-bottom: 12px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      margin-bottom: 14px;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+      backdrop-filter: blur(10px);
     }
 
     .list-item {
-      padding: 14px 16px;
+      padding: 16px 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       border-bottom: 0.5px solid var(--separator);
       cursor: pointer;
-      font-size: 16px;
+      font-size: 15px;
+      transition: background-color 0.15s ease, transform 0.15s ease;
+      animation: itemFadeIn 0.3s ease backwards;
+    }
+
+    @keyframes itemFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .list-item:last-child { border-bottom: none; }
-    .list-item:active { background: rgba(0,0,0,0.03); }
+
+    .list-item:active { 
+      background: rgba(125, 125, 125, 0.08); 
+      transform: scale(0.99);
+    }
 
     .item-title {
       font-size: 15px;
-      font-weight: 500;
-      line-height: 1.3;
-      margin-right: 10px;
+      font-weight: 600;
+      line-height: 1.35;
+      margin-right: 12px;
+      word-break: break-word;
     }
 
-    .arrow { color: var(--hint); font-size: 18px; }
+    .arrow { 
+      color: var(--hint); 
+      font-size: 18px; 
+      font-weight: 600;
+      opacity: 0.6;
+      transition: transform 0.15s ease;
+    }
 
-    /* Размер 16px исключает неприятный автозум страницы в Safari на iPhone */
+    .list-item:active .arrow { transform: translateX(3px); }
+
+    /* ПОЛЯ ВВОДА */
     .input-field {
       width: 100%;
-      padding: 12px 14px;
-      border: 1px solid var(--separator);
-      border-radius: 10px;
+      padding: 14px 16px;
+      border: 1.5px solid var(--card-border);
+      border-radius: 14px;
       font-size: 16px;
-      background: var(--card-bg);
+      background: rgba(125, 125, 125, 0.05);
       color: var(--text);
       margin-bottom: 12px;
       outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
       -webkit-user-select: auto;
       user-select: auto;
     }
 
-    .input-field:focus { border-color: var(--btn); }
+    .input-field:focus { 
+      border-color: var(--btn);
+      box-shadow: 0 0 0 3px rgba(46, 166, 255, 0.15);
+    }
 
     textarea.input-field {
-      min-height: 80px;
+      min-height: 90px;
       resize: vertical;
       font-family: inherit;
     }
 
+    /* КНОПКИ */
     .btn-main {
       width: 100%;
-      padding: 14px;
-      border-radius: 12px;
+      padding: 15px;
+      border-radius: 14px;
       background: var(--btn);
       color: var(--btn-text);
       border: none;
       font-size: 16px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
+      box-shadow: 0 4px 16px rgba(46, 166, 255, 0.3);
+      transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease, box-shadow 0.15s ease;
     }
 
-    .btn-main:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-main:active { 
+      transform: scale(0.97); 
+      box-shadow: 0 2px 8px rgba(46, 166, 255, 0.2);
+    }
+
+    .btn-main:disabled { 
+      opacity: 0.5; 
+      cursor: not-allowed; 
+      box-shadow: none; 
+      transform: none; 
+    }
 
     .btn-sub {
       background: none;
       border: none;
       color: var(--btn);
       font-size: 15px;
-      padding: 10px;
+      font-weight: 600;
+      padding: 12px;
       width: 100%;
       cursor: pointer;
       margin-top: 4px;
+      transition: opacity 0.15s ease;
     }
 
+    .btn-sub:active { opacity: 0.6; }
+
+    /* ЗАГРУЗКА ФАЙЛА */
     .upload-box {
-      border: 2px dashed var(--separator);
-      border-radius: 12px;
-      padding: 20px 14px;
+      border: 2px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 24px 16px;
       text-align: center;
       cursor: pointer;
-      margin-bottom: 14px;
-      background: var(--card-bg);
+      margin-bottom: 16px;
+      background: rgba(125, 125, 125, 0.03);
+      transition: all 0.2s ease;
+    }
+
+    .upload-box:active {
+      transform: scale(0.98);
+      background: rgba(125, 125, 125, 0.06);
     }
 
     .upload-box.has-file {
       border-color: var(--success);
-      background: rgba(52, 199, 89, 0.05);
+      background: rgba(52, 199, 89, 0.08);
+      border-style: solid;
     }
 
     .file-name {
       font-weight: 600;
       color: var(--text);
-      margin-top: 6px;
+      margin-top: 8px;
+      font-size: 14px;
       word-break: break-all;
     }
 
-    .loader {
+    /* БРС БАННЕР И ШКАЛА ПРОГРЕССА */
+    .brs-banner {
+      padding: 24px 20px;
+      text-align: center;
+      background: linear-gradient(135deg, #181b22, #242933);
+      color: #fff;
+      border-radius: 20px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .brs-banner::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(0, 122, 255, 0.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .brs-score {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin: 6px 0;
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .brs-score span {
+      font-size: 20px;
+      font-weight: 600;
+      opacity: 0.6;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      margin: 18px 0 10px 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent-gradient);
+      border-radius: 20px;
+      transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .progress-markers {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--hint);
+      padding: 0 2px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-top: 6px;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(8px);
+      transition: all 0.3s ease;
+    }
+
+    /* СКЕЛЕТОН АНИМАЦИЯ */
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .skeleton-item {
+      padding: 18px;
+      border-bottom: 0.5px solid var(--separator);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .skeleton-line {
+      height: 16px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, rgba(125,125,125,0.08) 25%, rgba(125,125,125,0.18) 50%, rgba(125,125,125,0.08) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.6s infinite ease-in-out;
+    }
+
+    /* СПИННЕР ДЛЯ КНОПОК */
+    .loader-mini {
       display: inline-block;
-      width: 22px;
-      height: 22px;
-      border: 2.5px solid rgba(255,255,255,0.3);
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
       border-radius: 50%;
       border-top-color: #fff;
-      animation: spin 0.8s linear infinite;
+      animation: spin 0.7s linear infinite;
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    .spinner-center {
-      text-align: center;
-      padding: 40px 0;
-      color: var(--hint);
-    }
   </style>
 </head>
 <body>
@@ -225,27 +407,33 @@
   <!-- ШАПКА -->
   <div class="top-bar">
     <div class="user-info">
-      <div class="avatar" id="avatarLetter">U</div>
+      <div class="avatar" id="avatarLetter">🎓</div>
       <div>
         <div class="user-name" id="userNameLabel">Moodle РЭУ</div>
-        <div class="user-status" id="userStatusLabel">Подключение...</div>
+        <div class="user-status" id="userStatusLabel">Синхронизация...</div>
       </div>
     </div>
-    <button class="header-btn" onclick="refreshCourses()">🔄 Обновить</button>
+    <button class="header-btn" onclick="refreshCourses()">
+      <span>🔄</span>
+      <span>Обновить</span>
+    </button>
   </div>
 
-  <!-- ЭКРАН 1: ЗАГРУЗКА -->
+  <!-- ЭКРАН 1: СКЕЛЕТОН ЗАГРУЗКИ -->
   <div id="screenLoading" class="screen active">
-    <div class="spinner-center">
-      <div class="loader" style="border-top-color: var(--btn); border-color: rgba(0,0,0,0.1);"></div>
-      <p style="margin-top: 14px;">Синхронизация с порталом РЭУ...</p>
+    <div class="section-title">Загрузка данных...</div>
+    <div class="card">
+      <div class="skeleton-item"><div class="skeleton-line" style="width: 75%;"></div></div>
+      <div class="skeleton-item"><div class="skeleton-line" style="width: 60%;"></div></div>
+      <div class="skeleton-item"><div class="skeleton-line" style="width: 85%;"></div></div>
+      <div class="skeleton-item"><div class="skeleton-line" style="width: 50%;"></div></div>
     </div>
   </div>
 
   <!-- ЭКРАН 2: ВХОД В АККАУНТ -->
   <div id="screenLogin" class="screen">
     <div class="section-title">Авторизация study.rea.ru</div>
-    <div class="card" style="padding: 16px;">
+    <div class="card" style="padding: 20px;">
       <input type="text" id="loginInput" class="input-field" placeholder="Логин (например, Ivanov.II)" autocapitalize="none">
       <input type="password" id="passwordInput" class="input-field" placeholder="Пароль">
       <button class="btn-main" id="loginBtn" onclick="performLogin()">Войти в аккаунт</button>
@@ -254,17 +442,17 @@
 
   <!-- ЭКРАН 3: СПИСОК ПРЕДМЕТОВ -->
   <div id="screenCourses" class="screen">
-    <div class="section-title">Твои предметы</div>
+    <div class="section-title">Твои дисциплины</div>
     <div class="card" id="coursesContainer"></div>
   </div>
 
   <!-- ЭКРАН 4: СПИСОК ЗАДАНИЙ -->
   <div id="screenTopics" class="screen">
-    <div class="card" style="margin-bottom: 12px; cursor: pointer;" onclick="loadCourseGrades()">
+    <div class="card" style="margin-bottom: 14px; cursor: pointer;" onclick="loadCourseGrades()">
       <div class="list-item" style="border: none;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 20px;">📊</span>
-          <span style="font-weight: 600;">Журнал оценок и БРС</span>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 22px;">📊</span>
+          <span style="font-weight: 700; font-size: 16px;">Журнал оценок и БРС</span>
         </div>
         <span class="arrow">›</span>
       </div>
@@ -272,37 +460,54 @@
 
     <div class="section-title" id="topicsTitle">Задания курса</div>
     <div class="card" id="topicsContainer"></div>
-    <button class="btn-sub" onclick="openScreen('screenCourses')">‹ Назад к курсам</button>
+    <button class="btn-sub" onclick="openScreen('screenCourses')">‹ Назад к предметам</button>
   </div>
 
   <!-- ЭКРАН 5: ЖУРНАЛ ОЦЕНОК И БРС -->
   <div id="screenGrades" class="screen">
-    <div class="card" style="padding: 20px; text-align: center; background: linear-gradient(135deg, #1c1c1e, #2c2c2e); color: #fff;">
-      <div style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7;">Текущий балл БРС</div>
-      <div id="gradesTotalNum" style="font-size: 42px; font-weight: 800; margin: 8px 0;">0</div>
-      <div id="gradesStatusBadge" style="display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; background: rgba(255,255,255,0.15);">
-        Считаем...
+    <div class="brs-banner">
+      <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.7; font-weight: 700;">
+        Текущий рейтинг БРС
+      </div>
+      <div class="brs-score">
+        <span id="gradesTotalNum">0</span>
+        <span id="gradesTotalMax">/ 100</span>
+      </div>
+      
+      <!-- Шкала прогресса -->
+      <div class="progress-track">
+        <div class="progress-fill" id="gradesProgressBar"></div>
+      </div>
+      <div class="progress-markers">
+        <span>0</span>
+        <span>60 (зачет)</span>
+        <span>85 (автомат)</span>
+        <span>100</span>
+      </div>
+
+      <div style="margin-top: 14px;">
+        <div class="status-badge" id="gradesStatusBadge">Подсчет баллов...</div>
       </div>
     </div>
 
-    <div class="section-title">История заданий и оценок</div>
+    <div class="section-title">Ведомость заданий</div>
     <div class="card" id="gradesListContainer"></div>
-    <button class="btn-sub" onclick="openScreen('screenTopics')">‹ Назад к заданиям</button>
+    <button class="btn-sub" onclick="openScreen('screenTopics')">‹ Назад к курсу</button>
   </div>
 
   <!-- ЭКРАН 6: ДЕТАЛИ И СДАЧА РАБОТЫ -->
   <div id="screenDetails" class="screen">
-    <div class="section-title">Материалы преподавателя</div>
-    <div class="card" id="filesContainer" style="padding: 6px 14px;"></div>
+    <div class="section-title">Материалы от преподавателя</div>
+    <div class="card" id="filesContainer" style="padding: 6px 16px;"></div>
 
-    <div class="section-title">Твое решение</div>
-    <div class="card" style="padding: 16px;">
-      <textarea id="replyTextInput" class="input-field" placeholder="Комментарий к ответу (необязательно)"></textarea>
+    <div class="section-title">Отправка решения</div>
+    <div class="card" style="padding: 18px;">
+      <textarea id="replyTextInput" class="input-field" placeholder="Комментарий к работе (необязательно)"></textarea>
 
       <div class="upload-box" id="uploadBox" onclick="document.getElementById('filePicker').click()">
-        <span style="font-size: 24px;">📎</span>
-        <div id="uploadBoxText" style="margin-top: 6px; font-size: 14px; color: var(--hint);">
-          Нажми, чтобы выбрать файл с решением
+        <span style="font-size: 28px;">📄</span>
+        <div id="uploadBoxText" style="margin-top: 6px; font-size: 14px; font-weight: 600; color: var(--hint);">
+          Нажми, чтобы прикрепить файл
         </div>
         <div class="file-name" id="selectedFileName"></div>
       </div>
@@ -312,7 +517,7 @@
         <span>Отправить на проверку</span>
       </button>
     </div>
-    <button class="btn-sub" onclick="openScreen('screenTopics')">‹ Назад к темам</button>
+    <button class="btn-sub" onclick="openScreen('screenTopics')">‹ Назад к заданиям</button>
   </div>
 
   <script>
@@ -322,11 +527,9 @@
     tg.ready();
     tg.expand();
 
-    // Защита от случайного свайпа вниз на iPhone и подтверждение закрытия при наборе
     if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
     if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
 
-    // Безопасное хранилище без падений в iframe на Telegram Web
     const safeStorage = {
       get: (key) => {
         try { return localStorage.getItem(key); } catch (e) { return null; }
@@ -353,6 +556,14 @@
       selectedFileName: ""
     };
 
+    function triggerHaptic(type) {
+      if (!tg.HapticFeedback) return;
+      if (type === 'light') tg.HapticFeedback.impactOccurred('light');
+      if (type === 'medium') tg.HapticFeedback.impactOccurred('medium');
+      if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
+      if (type === 'error') tg.HapticFeedback.notificationOccurred('error');
+    }
+
     function getAuthParams() {
       const p = new URLSearchParams();
       if (initData) p.append('initData', initData);
@@ -371,9 +582,11 @@
     function openScreen(screenId) {
       state.currentScreen = screenId;
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(screenId).classList.add('active');
+      
+      const target = document.getElementById(screenId);
+      target.classList.add('active');
 
-      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      triggerHaptic('light');
 
       if (screenId === 'screenCourses' || screenId === 'screenLogin') {
         tg.BackButton.hide();
@@ -383,6 +596,7 @@
     }
 
     tg.BackButton.onClick(() => {
+      triggerHaptic('light');
       if (state.currentScreen === 'screenDetails' || state.currentScreen === 'screenGrades') {
         openScreen('screenTopics');
       } else if (state.currentScreen === 'screenTopics') {
@@ -419,7 +633,7 @@
         }
       } catch (err) {
         document.getElementById('userStatusLabel').textContent = 'Ошибка связи';
-        notify('Не удалось связаться с сервером. Нажми «Обновить».');
+        notify('Не удалось связаться с сервером. Попробуй нажать кнопку «Обновить».');
       }
     }
 
@@ -434,13 +648,14 @@
       }
 
       btn.disabled = true;
-      btn.innerHTML = '<div class="loader"></div> Проверяю данные...';
+      btn.innerHTML = '<div class="loader-mini"></div> Проверяю данные...';
 
       try {
         const resp = await fetch(`${API_URL}?action=login&${getAuthParams()}&login=${encodeURIComponent(login)}&password=${encodeURIComponent(password)}`);
         const data = await resp.json();
 
         if (data.success) {
+          triggerHaptic('success');
           if (data.auth) {
             authToken = data.auth;
             safeStorage.set('moodle_auth_token', data.auth);
@@ -451,9 +666,11 @@
           renderCourses(data.courses);
           openScreen('screenCourses');
         } else {
+          triggerHaptic('error');
           notify('Ошибка входа: ' + (data.error || 'Проверь логин и пароль'));
         }
       } catch (e) {
+        triggerHaptic('error');
         notify('Сбой соединения при авторизации.');
       } finally {
         btn.disabled = false;
@@ -467,14 +684,18 @@
       container.innerHTML = '';
 
       if (!courses || courses.length === 0) {
-        container.innerHTML = '<div style="padding: 16px; color: var(--hint); text-align: center;">Курсы не найдены.</div>';
+        container.innerHTML = '<div style="padding: 24px; color: var(--hint); text-align: center; font-weight: 500;">Курсы не найдены.</div>';
         return;
       }
 
-      courses.forEach(c => {
+      courses.forEach((c, index) => {
         const div = document.createElement('div');
         div.className = 'list-item';
-        div.innerHTML = `<span class="item-title">${escapeHtml(c.fullname)}</span><span class="arrow">›</span>`;
+        div.style.animationDelay = `${index * 0.04}s`;
+        div.innerHTML = `
+          <span class="item-title">${escapeHtml(c.fullname)}</span>
+          <span class="arrow">›</span>
+        `;
         div.onclick = () => loadTopics(c.id, c.fullname);
         container.appendChild(div);
       });
@@ -493,15 +714,19 @@
         container.innerHTML = '';
 
         if (data.topics && data.topics.length > 0) {
-          data.topics.forEach(t => {
+          data.topics.forEach((t, index) => {
             const div = document.createElement('div');
             div.className = 'list-item';
-            div.innerHTML = `<span class="item-title">📝 ${escapeHtml(t.name)}</span><span class="arrow">›</span>`;
+            div.style.animationDelay = `${index * 0.04}s`;
+            div.innerHTML = `
+              <span class="item-title">📝 ${escapeHtml(t.name)}</span>
+              <span class="arrow">›</span>
+            `;
             div.onclick = () => loadTopicDetails(t.id);
             container.appendChild(div);
           });
         } else {
-          container.innerHTML = '<div style="padding: 16px; color: var(--hint); text-align: center;">Нет доступных тем обсуждений.</div>';
+          container.innerHTML = '<div style="padding: 24px; color: var(--hint); text-align: center;">В этом курсе нет активных заданий.</div>';
         }
         openScreen('screenTopics');
       } catch (e) {
@@ -519,36 +744,46 @@
         if (data.success) {
           const total = parseFloat(data.total) || 0;
           const max = parseFloat(data.max) || 100;
-          const percent = max > 0 ? (total / max) * 100 : 0;
+          const percent = Math.min(100, Math.max(0, max > 0 ? (total / max) * 100 : 0));
 
           document.getElementById('gradesTotalNum').textContent = data.total;
+          document.getElementById('gradesTotalMax').textContent = `/ ${data.max}`;
+
+          // Анимация шкалы прогресса
+          setTimeout(() => {
+            document.getElementById('gradesProgressBar').style.width = `${percent}%`;
+          }, 50);
 
           const badge = document.getElementById('gradesStatusBadge');
           if (percent >= 85) {
-            badge.textContent = "Отлично / Автомат 🔥";
-            badge.style.background = "#34c759";
+            badge.innerHTML = '🔥 Отлично (Автомат)';
+            badge.style.background = 'rgba(52, 199, 89, 0.2)';
+            badge.style.color = '#34c759';
           } else if (percent >= 60) {
-            badge.textContent = "Зачет набран ✅";
-            badge.style.background = "#30d158";
+            badge.innerHTML = '✅ Зачет набран';
+            badge.style.background = 'rgba(46, 166, 255, 0.2)';
+            badge.style.color = '#2ea6ff';
           } else {
             const need = Math.max(0, (max * 0.6) - total).toFixed(1);
-            badge.textContent = `До зачета нужно еще ${need} б.`;
-            badge.style.background = "#ff9f0a";
+            badge.innerHTML = `⚡ До зачета нужно: ${need} б.`;
+            badge.style.background = 'rgba(255, 159, 10, 0.2)';
+            badge.style.color = '#ff9f0a';
           }
 
           const container = document.getElementById('gradesListContainer');
           container.innerHTML = '';
 
           if (data.items && data.items.length > 0) {
-            data.items.forEach(it => {
+            data.items.forEach((it, index) => {
               const div = document.createElement('div');
               div.className = 'list-item';
               div.style.flexDirection = 'column';
               div.style.alignItems = 'flex-start';
-              div.style.gap = '4px';
+              div.style.gap = '6px';
+              div.style.animationDelay = `${index * 0.03}s`;
 
               const feedbackHtml = it.feedback 
-                ? `<div style="font-size: 13px; color: var(--hint); background: rgba(0,0,0,0.03); padding: 6px 10px; border-radius: 8px; width: 100%; margin-top: 4px;">💬 ${escapeHtml(it.feedback)}</div>` 
+                ? `<div style="font-size: 13px; color: var(--hint); background: rgba(125,125,125,0.06); padding: 8px 12px; border-radius: 10px; width: 100%; margin-top: 4px; line-height: 1.35;">💬 ${escapeHtml(it.feedback)}</div>` 
                 : '';
 
               const gradeColor = it.grade === "Не оценено" ? "var(--hint)" : "var(--btn)";
@@ -556,14 +791,14 @@
               div.innerHTML = `
                 <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
                   <span class="item-title" style="font-size: 14px;">${escapeHtml(it.name)}</span>
-                  <span style="font-weight: 700; color: ${gradeColor}; font-size: 14px;">${escapeHtml(it.grade)}</span>
+                  <span style="font-weight: 700; color: ${gradeColor}; font-size: 15px;">${escapeHtml(it.grade)}</span>
                 </div>
                 ${feedbackHtml}
               `;
               container.appendChild(div);
             });
           } else {
-            container.innerHTML = '<div style="padding: 16px; color: var(--hint); text-align: center;">В журнале пока нет данных.</div>';
+            container.innerHTML = '<div style="padding: 24px; color: var(--hint); text-align: center;">В журнале пока нет данных.</div>';
           }
 
           openScreen('screenGrades');
@@ -595,7 +830,7 @@
             div.style.padding = '12px 0';
             div.innerHTML = `
               <span class="item-title" style="font-size: 14px;">📄 ${escapeHtml(f.name)}</span>
-              <button class="header-btn" style="padding: 6px 10px; font-size: 13px;">📥 В чат</button>
+              <button class="header-btn" style="padding: 6px 12px; font-size: 13px;">📥 В чат</button>
             `;
             div.querySelector('button').onclick = (e) => {
               e.stopPropagation();
@@ -604,7 +839,7 @@
             filesContainer.appendChild(div);
           });
         } else {
-          filesContainer.innerHTML = '<div style="padding: 10px 0; color: var(--hint); font-size: 14px;">Преподаватель не прикрепил файлов к теме.</div>';
+          filesContainer.innerHTML = '<div style="padding: 12px 0; color: var(--hint); font-size: 14px;">Преподаватель не прикрепил файлов к теме.</div>';
         }
 
         document.getElementById('replyTextInput').value = '';
@@ -612,7 +847,7 @@
         state.selectedFileName = '';
         document.getElementById('selectedFileName').textContent = '';
         document.getElementById('uploadBox').classList.remove('has-file');
-        document.getElementById('uploadBoxText').textContent = 'Нажми, чтобы выбрать файл с решением';
+        document.getElementById('uploadBoxText').textContent = 'Нажми, чтобы прикрепить файл';
 
         openScreen('screenDetails');
       } catch (e) {
@@ -622,12 +857,12 @@
     }
 
     async function sendTeacherFileToChat(url, name) {
-      if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+      triggerHaptic('medium');
       try {
         const resp = await fetch(`${API_URL}?action=send_file&${getAuthParams()}&fileUrl=${encodeURIComponent(url)}&fileName=${encodeURIComponent(name)}`);
         const data = await resp.json();
         if (data.success) {
-          if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+          triggerHaptic('success');
           notify(`Файл «${name}» отправлен в личный чат с ботом!`);
         } else {
           notify('Ошибка: ' + (data.error || 'Не удалось отправить файл'));
@@ -642,6 +877,7 @@
       if (!file) return;
 
       if (file.size > 15 * 1024 * 1024) {
+        triggerHaptic('error');
         notify('Файл превышает 15 МБ. Сожми его перед отправкой.');
         return;
       }
@@ -652,16 +888,17 @@
       reader.onload = function(event) {
         state.selectedFileBlob = event.target.result.split(',')[1];
         document.getElementById('selectedFileName').textContent = file.name;
-        document.getElementById('uploadBoxText').textContent = 'Файл выбран:';
+        document.getElementById('uploadBoxText').textContent = 'Файл прикреплен:';
         document.getElementById('uploadBox').classList.add('has-file');
-        if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+        triggerHaptic('medium');
       };
       reader.readAsDataURL(file);
     }
 
     async function submitWork() {
       if (!state.selectedFileBlob) {
-        notify('Пожалуйста, выбери файл с решением.');
+        triggerHaptic('error');
+        notify('Пожалуйста, прикрепи файл с решением.');
         return;
       }
 
@@ -669,7 +906,7 @@
       const btn = document.getElementById('submitWorkBtn');
 
       btn.disabled = true;
-      btn.innerHTML = '<div class="loader"></div> Отправляю в Moodle...';
+      btn.innerHTML = '<div class="loader-mini"></div> Отправляю в Moodle...';
 
       const payload = {
         action: 'submit_work',
@@ -690,13 +927,15 @@
 
         const res = await resp.json();
         if (res.success) {
-          if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+          triggerHaptic('success');
           notify('Работа успешно сдана на портал РЭУ!');
           openScreen('screenTopics');
         } else {
+          triggerHaptic('error');
           notify('Ошибка сдачи: ' + res.error);
         }
       } catch (e) {
+        triggerHaptic('error');
         notify('Сбой при отправке работы. Проверь сеть.');
       } finally {
         btn.disabled = false;
@@ -705,6 +944,7 @@
     }
 
     function refreshCourses() {
+      triggerHaptic('medium');
       initApp();
     }
 
