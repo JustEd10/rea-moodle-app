@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Moodle РЭУ</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
@@ -19,14 +19,25 @@
       --warning: #ff9f0a;
     }
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    * { 
+      box-sizing: border-box; 
+      -webkit-tap-highlight-color: transparent; 
+    }
 
     body {
       margin: 0;
       padding: 14px;
+      padding-top: calc(14px + env(safe-area-inset-top, 0px));
+      padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg);
       color: var(--text);
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+      min-height: 100vh;
+      -webkit-user-select: none;
+      user-select: none;
     }
 
     .top-bar {
@@ -116,16 +127,19 @@
 
     .arrow { color: var(--hint); font-size: 18px; }
 
+    /* Размер 16px исключает неприятный автозум страницы в Safari на iPhone */
     .input-field {
       width: 100%;
       padding: 12px 14px;
       border: 1px solid var(--separator);
       border-radius: 10px;
-      font-size: 15px;
+      font-size: 16px;
       background: var(--card-bg);
       color: var(--text);
       margin-bottom: 12px;
       outline: none;
+      -webkit-user-select: auto;
+      user-select: auto;
     }
 
     .input-field:focus { border-color: var(--btn); }
@@ -232,7 +246,7 @@
   <div id="screenLogin" class="screen">
     <div class="section-title">Авторизация study.rea.ru</div>
     <div class="card" style="padding: 16px;">
-      <input type="text" id="loginInput" class="input-field" placeholder="Логин (например, Ivanov.II)">
+      <input type="text" id="loginInput" class="input-field" placeholder="Логин (например, Ivanov.II)" autocapitalize="none">
       <input type="password" id="passwordInput" class="input-field" placeholder="Пароль">
       <button class="btn-main" id="loginBtn" onclick="performLogin()">Войти в аккаунт</button>
     </div>
@@ -302,15 +316,33 @@
   </div>
 
   <script>
-    // Вставь сюда актуальный URL своего развертывания веб-приложения Google Apps Script
     const API_URL = "https://script.google.com/macros/s/AKfycbyM6fNRDAmyTmQRiHhysGLCo3r5Gsyu5CWEQNkTEbYEZnXOSmd33iHXaig4s4Epmb5WDg/exec";
 
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
 
-    // Защищенная строка авторизации от Telegram
-    const initData = tg.initData;
+    // Защита от случайного свайпа вниз на iPhone и подтверждение закрытия при наборе
+    if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+    if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
+
+    // Безопасное хранилище без падений в iframe на Telegram Web
+    const safeStorage = {
+      get: (key) => {
+        try { return localStorage.getItem(key); } catch (e) { return null; }
+      },
+      set: (key, val) => {
+        try { localStorage.setItem(key, val); } catch (e) {}
+      }
+    };
+
+    const urlParams = new URLSearchParams(window.location.search);
+    let authToken = urlParams.get('auth') || safeStorage.get('moodle_auth_token') || '';
+    if (urlParams.get('auth')) {
+      safeStorage.set('moodle_auth_token', urlParams.get('auth'));
+    }
+
+    let initData = tg.initData || '';
 
     let state = {
       courses: [],
@@ -320,6 +352,13 @@
       selectedFileBlob: null,
       selectedFileName: ""
     };
+
+    function getAuthParams() {
+      const p = new URLSearchParams();
+      if (initData) p.append('initData', initData);
+      if (authToken) p.append('auth', authToken);
+      return p.toString();
+    }
 
     function notify(message) {
       if (tg.showAlert) {
@@ -360,9 +399,14 @@
     async function initApp() {
       openScreen('screenLoading');
       try {
-        const resp = await fetch(`${API_URL}?action=init&initData=${encodeURIComponent(initData)}`);
+        const resp = await fetch(`${API_URL}?action=init&${getAuthParams()}`);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
+
+        if (data.auth) {
+          authToken = data.auth;
+          safeStorage.set('moodle_auth_token', data.auth);
+        }
 
         if (data.loggedIn) {
           document.getElementById('userNameLabel').textContent = data.login;
@@ -393,10 +437,14 @@
       btn.innerHTML = '<div class="loader"></div> Проверяю данные...';
 
       try {
-        const resp = await fetch(`${API_URL}?action=login&initData=${encodeURIComponent(initData)}&login=${encodeURIComponent(login)}&password=${encodeURIComponent(password)}`);
+        const resp = await fetch(`${API_URL}?action=login&${getAuthParams()}&login=${encodeURIComponent(login)}&password=${encodeURIComponent(password)}`);
         const data = await resp.json();
 
         if (data.success) {
+          if (data.auth) {
+            authToken = data.auth;
+            safeStorage.set('moodle_auth_token', data.auth);
+          }
           document.getElementById('userNameLabel').textContent = data.login;
           document.getElementById('userStatusLabel').textContent = 'В сети';
           document.getElementById('avatarLetter').textContent = data.login[0].toUpperCase();
@@ -438,7 +486,7 @@
       openScreen('screenLoading');
 
       try {
-        const resp = await fetch(`${API_URL}?action=topics&initData=${encodeURIComponent(initData)}&courseId=${courseId}`);
+        const resp = await fetch(`${API_URL}?action=topics&${getAuthParams()}&courseId=${courseId}`);
         const data = await resp.json();
 
         const container = document.getElementById('topicsContainer');
@@ -465,7 +513,7 @@
     async function loadCourseGrades() {
       openScreen('screenLoading');
       try {
-        const resp = await fetch(`${API_URL}?action=course_grades&initData=${encodeURIComponent(initData)}&courseId=${state.currentCourseId}`);
+        const resp = await fetch(`${API_URL}?action=course_grades&${getAuthParams()}&courseId=${state.currentCourseId}`);
         const data = await resp.json();
 
         if (data.success) {
@@ -534,7 +582,7 @@
       openScreen('screenLoading');
 
       try {
-        const resp = await fetch(`${API_URL}?action=topic_details&initData=${encodeURIComponent(initData)}&topicId=${topicId}`);
+        const resp = await fetch(`${API_URL}?action=topic_details&${getAuthParams()}&topicId=${topicId}`);
         const data = await resp.json();
 
         const filesContainer = document.getElementById('filesContainer');
@@ -576,9 +624,14 @@
     async function sendTeacherFileToChat(url, name) {
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
       try {
-        await fetch(`${API_URL}?action=send_file&initData=${encodeURIComponent(initData)}&fileUrl=${encodeURIComponent(url)}&fileName=${encodeURIComponent(name)}`);
-        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-        notify(`Файл «${name}» отправлен в чат-бот!`);
+        const resp = await fetch(`${API_URL}?action=send_file&${getAuthParams()}&fileUrl=${encodeURIComponent(url)}&fileName=${encodeURIComponent(name)}`);
+        const data = await resp.json();
+        if (data.success) {
+          if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+          notify(`Файл «${name}» отправлен в личный чат с ботом!`);
+        } else {
+          notify('Ошибка: ' + (data.error || 'Не удалось отправить файл'));
+        }
       } catch (e) {
         notify('Ошибка при отправке файла в чат.');
       }
@@ -589,7 +642,7 @@
       if (!file) return;
 
       if (file.size > 15 * 1024 * 1024) {
-        notify('Файл больше 15 МБ. Сожми его или отправь напрямую через бота.');
+        notify('Файл превышает 15 МБ. Сожми его перед отправкой.');
         return;
       }
 
@@ -621,6 +674,7 @@
       const payload = {
         action: 'submit_work',
         initData: initData,
+        auth: authToken,
         topicId: state.currentTopicId,
         text: text,
         fileName: state.selectedFileName,
