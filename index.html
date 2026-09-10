@@ -28,10 +28,7 @@
       }
     }
 
-    * { 
-      box-sizing: border-box; 
-      -webkit-tap-highlight-color: transparent; 
-    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     body {
       margin: 0;
@@ -49,7 +46,6 @@
       user-select: none;
     }
 
-    /* ШАПКА */
     .top-bar {
       display: flex;
       align-items: center;
@@ -76,18 +72,21 @@
       font-weight: 700;
       font-size: 17px;
       box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
-      transition: transform 0.2s ease;
     }
 
-    .avatar:active { transform: scale(0.95); }
-
-    .user-name { font-size: 17px; font-weight: 700; margin: 0; letter-spacing: -0.2px; }
+    .user-name { font-size: 17px; font-weight: 700; margin: 0; }
     .user-status { font-size: 13px; color: var(--hint); margin: 2px 0 0 0; }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
     .header-btn {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      padding: 8px 14px;
+      padding: 8px 12px;
       border-radius: 12px;
       color: var(--btn);
       font-size: 13px;
@@ -99,12 +98,9 @@
       transition: transform 0.15s ease, opacity 0.15s ease;
     }
 
-    .header-btn:active {
-      transform: scale(0.94);
-      opacity: 0.8;
-    }
+    .header-btn:active { transform: scale(0.94); opacity: 0.8; }
+    .header-btn.danger { color: var(--danger); }
 
-    /* ЭКРАНЫ И ПЕРЕХОДЫ */
     .screen { 
       display: none; 
       opacity: 0; 
@@ -127,7 +123,6 @@
       letter-spacing: 0.5px;
     }
 
-    /* КАРТОЧКИ И СПИСКИ */
     .card {
       background: var(--card-bg);
       border-radius: 18px;
@@ -156,11 +151,7 @@
     }
 
     .list-item:last-child { border-bottom: none; }
-
-    .list-item:active { 
-      background: rgba(125, 125, 125, 0.08); 
-      transform: scale(0.99);
-    }
+    .list-item:active { background: rgba(125, 125, 125, 0.08); transform: scale(0.99); }
 
     .item-title {
       font-size: 15px;
@@ -170,17 +161,8 @@
       word-break: break-word;
     }
 
-    .arrow { 
-      color: var(--hint); 
-      font-size: 18px; 
-      font-weight: 600;
-      opacity: 0.6;
-      transition: transform 0.15s ease;
-    }
+    .arrow { color: var(--hint); font-size: 18px; font-weight: 600; opacity: 0.6; }
 
-    .list-item:active .arrow { transform: translateX(3px); }
-
-    /* ПОЛЯ ВВОДА */
     .input-field {
       width: 100%;
       padding: 14px 16px;
@@ -191,7 +173,6 @@
       color: var(--text);
       margin-bottom: 12px;
       outline: none;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
       -webkit-user-select: auto;
       user-select: auto;
     }
@@ -201,13 +182,8 @@
       box-shadow: 0 0 0 3px rgba(46, 166, 255, 0.15);
     }
 
-    textarea.input-field {
-      min-height: 90px;
-      resize: vertical;
-      font-family: inherit;
-    }
+    textarea.input-field { min-height: 90px; resize: vertical; font-family: inherit; }
 
-    /* КНОПКИ */
     .btn-main {
       width: 100%;
       padding: 15px;
@@ -223,20 +199,11 @@
       justify-content: center;
       gap: 8px;
       box-shadow: 0 4px 16px rgba(46, 166, 255, 0.3);
-      transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease, box-shadow 0.15s ease;
+      transition: transform 0.15s ease;
     }
 
-    .btn-main:active { 
-      transform: scale(0.97); 
-      box-shadow: 0 2px 8px rgba(46, 166, 255, 0.2);
-    }
-
-    .btn-main:disabled { 
-      opacity: 0.5; 
-      cursor: not-allowed; 
-      box-shadow: none; 
-      transform: none; 
-    }
+    .btn-main:active { transform: scale(0.97); }
+    .btn-main:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .btn-sub {
       background: none;
@@ -248,12 +215,8 @@
       width: 100%;
       cursor: pointer;
       margin-top: 4px;
-      transition: opacity 0.15s ease;
     }
 
-    .btn-sub:active { opacity: 0.6; }
-
-    /* ЗАГРУЗКА ФАЙЛА */
     .upload-box {
       border: 2px dashed rgba(255, 255, 255, 0.15);
       border-radius: 16px;
@@ -262,12 +225,6 @@
       cursor: pointer;
       margin-bottom: 16px;
       background: rgba(125, 125, 125, 0.03);
-      transition: all 0.2s ease;
-    }
-
-    .upload-box:active {
-      transform: scale(0.98);
-      background: rgba(125, 125, 125, 0.06);
     }
 
     .upload-box.has-file {
@@ -276,15 +233,8 @@
       border-style: solid;
     }
 
-    .file-name {
-      font-weight: 600;
-      color: var(--text);
-      margin-top: 8px;
-      font-size: 14px;
-      word-break: break-all;
-    }
+    .file-name { font-weight: 600; color: var(--text); margin-top: 8px; font-size: 14px; word-break: break-all; }
 
-    /* БРС БАННЕР И ШКАЛА ПРОГРЕССА */
     .brs-banner {
       padding: 24px 20px;
       text-align: center;
@@ -292,20 +242,7 @@
       color: #fff;
       border-radius: 20px;
       position: relative;
-      overflow: hidden;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-    }
-
-    .brs-banner::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(0, 122, 255, 0.15) 0%, transparent 60%);
-      pointer-events: none;
     }
 
     .brs-score {
@@ -319,11 +256,7 @@
       gap: 4px;
     }
 
-    .brs-score span {
-      font-size: 20px;
-      font-weight: 600;
-      opacity: 0.6;
-    }
+    .brs-score span { font-size: 20px; font-weight: 600; opacity: 0.6; }
 
     .progress-track {
       width: 100%;
@@ -332,7 +265,6 @@
       border-radius: 20px;
       margin: 18px 0 10px 0;
       overflow: hidden;
-      position: relative;
     }
 
     .progress-fill {
@@ -349,7 +281,6 @@
       font-size: 11px;
       font-weight: 600;
       color: var(--hint);
-      padding: 0 2px;
     }
 
     .status-badge {
@@ -362,11 +293,8 @@
       font-weight: 700;
       margin-top: 6px;
       background: rgba(255, 255, 255, 0.12);
-      backdrop-filter: blur(8px);
-      transition: all 0.3s ease;
     }
 
-    /* СКЕЛЕТОН АНИМАЦИЯ */
     @keyframes shimmer {
       0% { background-position: -200% 0; }
       100% { background-position: 200% 0; }
@@ -377,7 +305,6 @@
       border-bottom: 0.5px solid var(--separator);
       display: flex;
       align-items: center;
-      gap: 12px;
     }
 
     .skeleton-line {
@@ -388,7 +315,6 @@
       animation: shimmer 1.6s infinite ease-in-out;
     }
 
-    /* СПИННЕР ДЛЯ КНОПОК */
     .loader-mini {
       display: inline-block;
       width: 18px;
@@ -413,10 +339,10 @@
         <div class="user-status" id="userStatusLabel">Синхронизация...</div>
       </div>
     </div>
-    <button class="header-btn" onclick="refreshCourses()">
-      <span>🔄</span>
-      <span>Обновить</span>
-    </button>
+    <div class="header-actions">
+      <button class="header-btn" onclick="refreshCourses()">🔄</button>
+      <button class="header-btn danger" id="logoutHeaderBtn" style="display: none;" onclick="performLogout()">🚪</button>
+    </div>
   </div>
 
   <!-- ЭКРАН 1: СКЕЛЕТОН ЗАГРУЗКИ -->
@@ -474,7 +400,6 @@
         <span id="gradesTotalMax">/ 100</span>
       </div>
       
-      <!-- Шкала прогресса -->
       <div class="progress-track">
         <div class="progress-fill" id="gradesProgressBar"></div>
       </div>
@@ -497,7 +422,7 @@
 
   <!-- ЭКРАН 6: ДЕТАЛИ И СДАЧА РАБОТЫ -->
   <div id="screenDetails" class="screen">
-    <div class="section-title">Материалы от преподавателя</div>
+    <div class="section-title">Материалы преподавателя</div>
     <div class="card" id="filesContainer" style="padding: 6px 16px;"></div>
 
     <div class="section-title">Отправка решения</div>
@@ -626,14 +551,16 @@
           document.getElementById('userNameLabel').textContent = data.login;
           document.getElementById('userStatusLabel').textContent = 'В сети';
           document.getElementById('avatarLetter').textContent = data.login[0].toUpperCase();
+          document.getElementById('logoutHeaderBtn').style.display = 'flex';
           renderCourses(data.courses);
           openScreen('screenCourses');
         } else {
+          document.getElementById('logoutHeaderBtn').style.display = 'none';
           openScreen('screenLogin');
         }
       } catch (err) {
         document.getElementById('userStatusLabel').textContent = 'Ошибка связи';
-        notify('Не удалось связаться с сервером. Попробуй нажать кнопку «Обновить».');
+        notify('Не удалось связаться с сервером. Нажми «Обновить».');
       }
     }
 
@@ -663,6 +590,7 @@
           document.getElementById('userNameLabel').textContent = data.login;
           document.getElementById('userStatusLabel').textContent = 'В сети';
           document.getElementById('avatarLetter').textContent = data.login[0].toUpperCase();
+          document.getElementById('logoutHeaderBtn').style.display = 'flex';
           renderCourses(data.courses);
           openScreen('screenCourses');
         } else {
@@ -676,6 +604,29 @@
         btn.disabled = false;
         btn.innerHTML = 'Войти в аккаунт';
       }
+    }
+
+    async function performLogout() {
+      const confirmLogout = confirm('Выйти из аккаунта study.rea.ru?');
+      if (!confirmLogout) return;
+
+      triggerHaptic('medium');
+      openScreen('screenLoading');
+
+      try {
+        await fetch(`${API_URL}?action=logout&${getAuthParams()}`);
+      } catch (e) {}
+
+      authToken = '';
+      safeStorage.set('moodle_auth_token', '');
+      document.getElementById('userNameLabel').textContent = 'Moodle РЭУ';
+      document.getElementById('userStatusLabel').textContent = 'Не авторизован';
+      document.getElementById('avatarLetter').textContent = '🎓';
+      document.getElementById('logoutHeaderBtn').style.display = 'none';
+      document.getElementById('loginInput').value = '';
+      document.getElementById('passwordInput').value = '';
+
+      openScreen('screenLogin');
     }
 
     function renderCourses(courses) {
@@ -749,7 +700,6 @@
           document.getElementById('gradesTotalNum').textContent = data.total;
           document.getElementById('gradesTotalMax').textContent = `/ ${data.max}`;
 
-          // Анимация шкалы прогресса
           setTimeout(() => {
             document.getElementById('gradesProgressBar').style.width = `${percent}%`;
           }, 50);
