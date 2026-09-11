@@ -497,7 +497,7 @@
       </div>
       <div class="info-row">
         <span class="info-label">Статус сессии</span>
-        <span class="info-value" style="color: var(--success); display: flex; align-items: center; gap: 4px;">
+        <span class="info-value" style="color: var(--success); display: flex; align-items: gap: 4px;">
           <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></span> 
           В сети
         </span>
@@ -810,7 +810,7 @@
       container.innerHTML = '';
 
       if (!courses || courses.length === 0) {
-        container.innerHTML = '<div style="padding: 24px; color: var(--hint); text-align: center; font-weight: 500;">Курсы не найдены.</div>';
+        container.innerHTML = '<div style="padding: 24px; color: var(--hint); text-align: center; font-weight: 500;">Курсы не найдены. Нажми «Обновить» в шапке.</div>';
         return;
       }
 
@@ -1068,9 +1068,26 @@
       }
     }
 
-    function refreshCourses() {
+    async function refreshCourses() {
       triggerHaptic('medium');
-      initApp();
+      openScreen('screenLoading');
+      try {
+        const resp = await fetch(`${API_URL}?action=init&refresh=1&${getAuthParams()}`);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+
+        if (data.loggedIn && data.courses && data.courses.length > 0) {
+          state.userLogin = data.login;
+          renderCourses(data.courses);
+          openScreen('screenCourses');
+          triggerHaptic('success');
+        } else {
+          initApp();
+        }
+      } catch (e) {
+        notify('Ошибка обновления. Проверь связь.');
+        openScreen('screenCourses');
+      }
     }
 
     initApp();
