@@ -252,6 +252,25 @@
     .info-label { color: var(--hint); font-weight: 500; }
     .info-value { font-weight: 600; color: var(--text); }
 
+    .status-online {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--success);
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px rgba(52, 199, 89, 0.45);
+      display: block;
+      flex-shrink: 0;
+    }
+
     .input-field {
       width: 100%;
       padding: 14px 16px;
@@ -491,9 +510,11 @@
       </div>
       <div class="info-row">
         <span class="info-label">Статус сессии</span>
-        <span class="info-value" style="color: var(--success); display: flex; align-items: center; gap: 4px;">
-          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></span> 
-          В сети
+        <span class="info-value">
+          <span class="status-online">
+            <span class="status-dot"></span>
+            <span>В сети</span>
+          </span>
         </span>
       </div>
       <div class="info-row">
