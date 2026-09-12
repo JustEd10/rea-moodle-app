@@ -46,7 +46,6 @@
       user-select: none;
     }
 
-    /* ШАПКА */
     .top-bar {
       display: flex;
       align-items: center;
@@ -124,7 +123,6 @@
 
     .header-btn:active { transform: scale(0.94); opacity: 0.8; }
 
-    /* ЭКРАНЫ */
     .screen { 
       display: none; 
       opacity: 0; 
@@ -147,7 +145,6 @@
       letter-spacing: 0.5px;
     }
 
-    /* КАРТОЧКИ И СПИСКИ */
     .card {
       background: var(--card-bg);
       border-radius: 18px;
@@ -188,7 +185,6 @@
 
     .arrow { color: var(--hint); font-size: 18px; font-weight: 600; opacity: 0.6; }
 
-    /* ПРОФИЛЬ */
     .profile-hero {
       padding: 28px 20px;
       text-align: center;
@@ -256,7 +252,6 @@
     .info-label { color: var(--hint); font-weight: 500; }
     .info-value { font-weight: 600; color: var(--text); }
 
-    /* ПОЛЯ ВВОДА И КНОПКИ */
     .input-field {
       width: 100%;
       padding: 14px 16px;
@@ -340,7 +335,6 @@
 
     .file-name { font-weight: 600; color: var(--text); margin-top: 8px; font-size: 14px; word-break: break-all; }
 
-    /* БРС БАННЕР */
     .brs-banner {
       padding: 24px 20px;
       text-align: center;
@@ -497,7 +491,7 @@
       </div>
       <div class="info-row">
         <span class="info-label">Статус сессии</span>
-        <span class="info-value" style="color: var(--success); display: flex; align-items: gap: 4px;">
+        <span class="info-value" style="color: var(--success); display: flex; align-items: center; gap: 4px;">
           <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></span> 
           В сети
         </span>
@@ -643,6 +637,8 @@
       const p = new URLSearchParams();
       if (initData) p.append('initData', initData);
       if (authToken) p.append('auth', authToken);
+      const tgUser = tg.initDataUnsafe && tg.initDataUnsafe.user;
+      if (tgUser && tgUser.id) p.append('userId', String(tgUser.id));
       return p.toString();
     }
 
@@ -810,7 +806,7 @@
       container.innerHTML = '';
 
       if (!courses || courses.length === 0) {
-        container.innerHTML = '<div style="padding: 24px; color: var(--hint); text-align: center; font-weight: 500;">Курсы не найдены. Нажми «Обновить» в шапке.</div>';
+        container.innerHTML = '<div style="padding: 24px; color: var(--hint); text-align: center; font-weight: 500;">Курсы не найдены. Нажми 🔄 сверху для повторной загрузки.</div>';
         return;
       }
 
@@ -1037,6 +1033,7 @@
         action: 'submit_work',
         initData: initData,
         auth: authToken,
+        userId: (tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user.id : '',
         topicId: state.currentTopicId,
         text: text,
         fileName: state.selectedFileName,
