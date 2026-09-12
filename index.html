@@ -30,11 +30,14 @@
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
     body {
       margin: 0;
-      padding: 16px;
-      padding-top: calc(14px + env(safe-area-inset-top, 0px));
-      padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+      padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg);
       color: var(--text);
@@ -42,8 +45,23 @@
       margin-left: auto;
       margin-right: auto;
       min-height: 100vh;
+      min-height: 100dvh;
       -webkit-user-select: none;
       user-select: none;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-main {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      padding: 16px;
+      padding-top: calc(14px + env(safe-area-inset-top, 0px));
+      padding-bottom: 8px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
     }
 
     .top-bar {
@@ -52,6 +70,7 @@
       justify-content: space-between;
       margin-bottom: 16px;
       padding: 4px 2px;
+      flex-shrink: 0;
     }
 
     .user-info {
@@ -123,17 +142,184 @@
 
     .header-btn:active { transform: scale(0.94); opacity: 0.8; }
 
-    .screen { 
-      display: none; 
-      opacity: 0; 
-      transform: translateY(10px);
-      transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    .screen {
+      display: none;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
     }
-    
-    .screen.active { 
-      display: block; 
-      opacity: 1; 
-      transform: translateY(0);
+
+    .screen.active {
+      display: block;
+      animation: screenIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes screenIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .tab-viewport {
+      display: none;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      touch-action: pan-y;
+    }
+
+    .tab-viewport.visible {
+      display: block;
+    }
+
+    .tab-track {
+      display: flex;
+      height: 100%;
+      width: 300%;
+      min-width: 300%;
+      flex: 0 0 300%;
+      will-change: transform;
+    }
+
+    .tab-track.animated {
+      transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    .tab-page {
+      flex: 0 0 33.333%;
+      width: 33.333%;
+      max-width: 33.333%;
+      height: 100%;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      padding-right: 1px;
+    }
+
+    .tab-bar {
+      display: none;
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 20;
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 6px 10px calc(10px + env(safe-area-inset-bottom, 0px));
+      background: color-mix(in srgb, var(--bg) 78%, transparent);
+      backdrop-filter: saturate(180%) blur(24px);
+      -webkit-backdrop-filter: saturate(180%) blur(24px);
+      border-top: 0.5px solid var(--separator);
+    }
+
+    .tab-bar.visible {
+      display: block;
+    }
+
+    body.has-tabs .app-main {
+      padding-bottom: 84px;
+    }
+
+    .tab-bar-inner {
+      display: flex;
+      align-items: stretch;
+      justify-content: space-around;
+      position: relative;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    .tab-slider-pill {
+      position: absolute;
+      top: 2px;
+      left: 0;
+      height: calc(100% - 4px);
+      width: 33.333%;
+      border-radius: 16px;
+      background: rgba(125, 125, 125, 0.14);
+      transform: translateX(0);
+      transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+      pointer-events: none;
+    }
+
+    .tab-btn {
+      flex: 1;
+      position: relative;
+      z-index: 1;
+      border: none;
+      background: none;
+      color: var(--hint);
+      padding: 6px 4px 4px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-family: inherit;
+    }
+
+    .tab-btn.active {
+      color: var(--btn);
+    }
+
+    .tab-icon {
+      font-size: 20px;
+      line-height: 1;
+      filter: grayscale(0.3);
+    }
+
+    .tab-btn.active .tab-icon {
+      filter: none;
+      transform: scale(1.06);
+    }
+
+    .tab-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: -0.1px;
+    }
+
+    .notes-hero {
+      margin-top: 12px;
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      text-align: center;
+    }
+
+    .caution-tape {
+      height: 22px;
+      background: repeating-linear-gradient(
+        -45deg,
+        #111111 0 14px,
+        #ffcc00 14px 28px
+      );
+    }
+
+    .notes-body {
+      padding: 36px 22px 40px;
+    }
+
+    .notes-cone {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    .notes-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+      margin: 0 0 8px;
+    }
+
+    .notes-sub {
+      font-size: 14px;
+      color: var(--hint);
+      line-height: 1.45;
+      margin: 0;
     }
 
     .section-title {
@@ -448,6 +634,7 @@
   </style>
 </head>
 <body>
+<div class="app-main">
 
   <!-- ШАПКА -->
   <div class="top-bar">
@@ -487,14 +674,29 @@
     </div>
   </div>
 
-  <!-- ЭКРАН 3: СПИСОК ПРЕДМЕТОВ -->
-  <div id="screenCourses" class="screen">
-    <div class="section-title">Твои дисциплины</div>
-    <div class="card" id="coursesContainer"></div>
-  </div>
+  <!-- СВАЙП-СЛАЙДЕР: КУРСЫ / КОНСПЕКТЫ / ПРОФИЛЬ -->
+  <div id="tabViewport" class="tab-viewport" hidden>
+    <div id="tabTrack" class="tab-track animated">
+      <div class="tab-page" data-tab="courses">
+        <div class="section-title">Твои дисциплины</div>
+        <div class="card" id="coursesContainer"></div>
+      </div>
 
-  <!-- ЭКРАН 4: ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ -->
-  <div id="screenProfile" class="screen">
+      <div class="tab-page" data-tab="notes">
+        <div class="section-title">Конспекты</div>
+        <div class="notes-hero">
+          <div class="caution-tape" aria-hidden="true"></div>
+          <div class="notes-body">
+            <div class="notes-cone">🚧</div>
+            <h2 class="notes-title">Временно недоступно</h2>
+            <p class="notes-sub">Раздел конспектов ещё на стройке. Загляни сюда позже — материалы появятся здесь.</p>
+          </div>
+          <div class="caution-tape" aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <div class="tab-page" data-tab="profile">
+  <!-- ЭКРАН ПРОФИЛЯ -->
     <div class="profile-hero">
       <div class="profile-avatar-big" id="profileBigAvatar">🎓</div>
       <div class="profile-name" id="profileFullName">Студент</div>
@@ -532,8 +734,8 @@
         <span>🚪 Выйти из аккаунта</span>
       </button>
     </div>
-
-    <button class="btn-sub" onclick="openScreen('screenCourses')">‹ Назад к предметам</button>
+      </div>
+    </div>
   </div>
 
   <!-- ЭКРАН 5: СПИСОК ЗАДАНИЙ -->
@@ -609,10 +811,42 @@
     <button class="btn-sub" onclick="openScreen('screenTopics')">‹ Назад к заданиям</button>
   </div>
 
+</div>
+
+<nav class="tab-bar" id="tabBar" aria-label="Основная навигация" hidden>
+  <div class="tab-bar-inner">
+    <div class="tab-slider-pill" id="tabPill"></div>
+    <button type="button" class="tab-btn active" data-tab-index="0" onclick="selectMainTab(0)">
+      <span class="tab-icon">📚</span>
+      <span class="tab-label">Курсы</span>
+    </button>
+    <button type="button" class="tab-btn" data-tab-index="1" onclick="selectMainTab(1)">
+      <span class="tab-icon">📝</span>
+      <span class="tab-label">Конспекты</span>
+    </button>
+    <button type="button" class="tab-btn" data-tab-index="2" onclick="selectMainTab(2)">
+      <span class="tab-icon">👤</span>
+      <span class="tab-label">Профиль</span>
+    </button>
+  </div>
+</nav>
+
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyM6fNRDAmyTmQRiHhysGLCo3r5Gsyu5CWEQNkTEbYEZnXOSmd33iHXaig4s4Epmb5WDg/exec";
 
-    const tg = window.Telegram.WebApp;
+    const tgApi = window.Telegram && window.Telegram.WebApp;
+    const tg = tgApi || {
+      ready() {},
+      expand() {},
+      initData: '',
+      initDataUnsafe: {},
+      BackButton: { hide() {}, show() {}, onClick() {} },
+      HapticFeedback: null,
+      showAlert: null,
+      showConfirm: null,
+      disableVerticalSwipes: null,
+      enableClosingConfirmation: null
+    };
     tg.ready();
     tg.expand();
 
@@ -643,8 +877,15 @@
       currentScreen: "screenLoading",
       selectedFileBlob: null,
       selectedFileName: "",
-      userLogin: ""
+      userLogin: "",
+      mainTab: 0
     };
+
+    const MAIN_TABS = ['screenCourses', 'screenNotes', 'screenProfile'];
+    const tabViewport = document.getElementById('tabViewport');
+    const tabTrack = document.getElementById('tabTrack');
+    const tabBar = document.getElementById('tabBar');
+    const tabPill = document.getElementById('tabPill');
 
     function triggerHaptic(type) {
       if (!tg.HapticFeedback) return;
@@ -671,42 +912,25 @@
       }
     }
 
-    function openScreen(screenId) {
-      state.currentScreen = screenId;
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      
-      const target = document.getElementById(screenId);
-      target.classList.add('active');
-
-      triggerHaptic('light');
-
-      if (screenId === 'screenCourses' || screenId === 'screenLogin') {
-        tg.BackButton.hide();
-      } else {
-        tg.BackButton.show();
+    function confirmAction(message, onYes) {
+      if (tg.showConfirm) {
+        tg.showConfirm(message, (ok) => { if (ok) onYes(); });
+      } else if (confirm(message)) {
+        onYes();
       }
     }
 
-    tg.BackButton.onClick(() => {
-      triggerHaptic('light');
-      if (state.currentScreen === 'screenProfile') {
-        openScreen('screenCourses');
-      } else if (state.currentScreen === 'screenDetails' || state.currentScreen === 'screenGrades') {
-        openScreen('screenTopics');
-      } else if (state.currentScreen === 'screenTopics') {
-        openScreen('screenCourses');
-      }
-    });
-
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
+    function pluralCourses(n) {
+      const abs = Math.abs(n) % 100;
+      const last = abs % 10;
+      if (abs > 10 && abs < 20) return `${n} дисциплин`;
+      if (last === 1) return `${n} дисциплина`;
+      if (last >= 2 && last <= 4) return `${n} дисциплины`;
+      return `${n} дисциплин`;
     }
 
-    function openProfile() {
+    function fillProfileCard() {
       if (!state.userLogin) return;
-      
       const tgUser = tg.initDataUnsafe && tg.initDataUnsafe.user;
       const firstName = tgUser ? tgUser.first_name : '';
       const lastName = tgUser ? (tgUser.last_name || '') : '';
@@ -717,10 +941,134 @@
       document.getElementById('profileTgUsername').textContent = username;
       document.getElementById('profileBigAvatar').textContent = state.userLogin[0].toUpperCase();
       document.getElementById('profileMoodleLogin').textContent = state.userLogin;
-      document.getElementById('profileCoursesCount').textContent = `${state.courses.length} дисциплин`;
-
-      openScreen('screenProfile');
+      document.getElementById('profileCoursesCount').textContent = pluralCourses(state.courses.length);
     }
+
+    function setTabBarVisible(visible) {
+      tabBar.classList.toggle('visible', visible);
+      tabViewport.classList.toggle('visible', visible);
+      tabViewport.hidden = !visible;
+      tabBar.hidden = !visible;
+      document.body.classList.toggle('has-tabs', visible);
+    }
+
+    function applyTabTransform(index, withAnim) {
+      tabTrack.classList.toggle('animated', withAnim);
+      tabTrack.style.transform = `translateX(${-index * 33.333}%)`;
+      tabPill.style.transform = `translateX(${index * 100}%)`;
+      const buttons = tabBar.querySelectorAll('.tab-btn');
+      buttons.forEach((btn, i) => btn.classList.toggle('active', i === index));
+    }
+
+    function selectMainTab(index, withAnim = true, haptic = true) {
+      if (!state.userLogin && index !== 0) return;
+      const next = Math.max(0, Math.min(2, index));
+      const changed = next !== state.mainTab || !MAIN_TABS.includes(state.currentScreen);
+      state.mainTab = next;
+      if (haptic && changed) triggerHaptic('light');
+      fillProfileCard();
+      applyTabTransform(next, withAnim);
+      openScreen(MAIN_TABS[next], { fromTab: true, silent: true });
+    }
+
+    function openScreen(screenId, opts) {
+      const target = document.getElementById(screenId);
+      const isMain = MAIN_TABS.includes(screenId);
+      state.currentScreen = screenId;
+
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+
+      if (isMain) {
+        setTabBarVisible(true);
+        if (!opts || !opts.fromTab) {
+          const idx = MAIN_TABS.indexOf(screenId);
+          state.mainTab = idx;
+          applyTabTransform(idx, true);
+        }
+        if (!opts || !opts.silent) triggerHaptic('light');
+        tg.BackButton.hide();
+        return;
+      }
+
+      setTabBarVisible(false);
+      if (!target) return;
+      target.classList.add('active');
+      if (!opts || !opts.silent) triggerHaptic('light');
+
+      if (screenId === 'screenLogin' || screenId === 'screenLoading') {
+        tg.BackButton.hide();
+      } else {
+        tg.BackButton.show();
+      }
+    }
+
+    tg.BackButton.onClick(() => {
+      triggerHaptic('light');
+      if (state.currentScreen === 'screenDetails' || state.currentScreen === 'screenGrades') {
+        openScreen('screenTopics');
+      } else if (state.currentScreen === 'screenTopics') {
+        openScreen('screenCourses');
+      }
+    });
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text == null ? '' : String(text);
+      return div.innerHTML;
+    }
+
+    function openProfile() {
+      if (!state.userLogin) return;
+      fillProfileCard();
+      selectMainTab(2);
+    }
+
+    let swipe = { startX: 0, startY: 0, dx: 0, active: false, locked: null };
+
+    tabViewport.addEventListener('touchstart', (e) => {
+      if (!tabViewport.classList.contains('visible')) return;
+      const t = e.changedTouches[0];
+      swipe.startX = t.clientX;
+      swipe.startY = t.clientY;
+      swipe.dx = 0;
+      swipe.active = true;
+      swipe.locked = null;
+      tabTrack.classList.remove('animated');
+    }, { passive: true });
+
+    tabViewport.addEventListener('touchmove', (e) => {
+      if (!swipe.active) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - swipe.startX;
+      const dy = t.clientY - swipe.startY;
+      if (swipe.locked === null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+        swipe.locked = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+      }
+      if (swipe.locked !== 'x') return;
+      swipe.dx = dx;
+      const width = tabViewport.offsetWidth || 1;
+      let offset = (-state.mainTab * 33.333) + (dx / width) * 33.333;
+      const min = -66.666;
+      const max = 0;
+      offset = Math.max(min, Math.min(max, offset));
+      tabTrack.style.transform = `translateX(${offset}%)`;
+    }, { passive: true });
+
+    tabViewport.addEventListener('touchend', () => {
+      if (!swipe.active) return;
+      swipe.active = false;
+      tabTrack.classList.add('animated');
+      if (swipe.locked !== 'x') {
+        applyTabTransform(state.mainTab, true);
+        return;
+      }
+      const width = tabViewport.offsetWidth || 1;
+      const threshold = Math.min(80, width * 0.18);
+      let next = state.mainTab;
+      if (swipe.dx < -threshold) next += 1;
+      else if (swipe.dx > threshold) next -= 1;
+      selectMainTab(next, true, true);
+    });
 
     async function initApp() {
       openScreen('screenLoading');
@@ -737,19 +1085,26 @@
         if (data.loggedIn) {
           state.userLogin = data.login;
           document.getElementById('userNameLabel').textContent = data.login;
-          document.getElementById('userStatusLabel').textContent = 'В сети (профиль)';
+          document.getElementById('userStatusLabel').textContent = 'В сети';
           document.getElementById('profileChevron').style.display = 'inline';
           document.getElementById('avatarLetter').textContent = data.login[0].toUpperCase();
-          renderCourses(data.courses);
-          openScreen('screenCourses');
+          renderCourses(data.courses || []);
+          fillProfileCard();
+          selectMainTab(0, false, false);
         } else {
           state.userLogin = '';
           document.getElementById('profileChevron').style.display = 'none';
+          document.getElementById('userStatusLabel').textContent = 'Нужна авторизация';
           openScreen('screenLogin');
         }
       } catch (err) {
         document.getElementById('userStatusLabel').textContent = 'Ошибка связи';
         notify('Не удалось связаться с сервером. Нажми «Обновить».');
+        if (state.userLogin) {
+          selectMainTab(state.mainTab, false, false);
+        } else {
+          openScreen('screenLogin');
+        }
       }
     }
 
@@ -778,11 +1133,12 @@
           }
           state.userLogin = data.login;
           document.getElementById('userNameLabel').textContent = data.login;
-          document.getElementById('userStatusLabel').textContent = 'В сети (профиль)';
+          document.getElementById('userStatusLabel').textContent = 'В сети';
           document.getElementById('profileChevron').style.display = 'inline';
           document.getElementById('avatarLetter').textContent = data.login[0].toUpperCase();
-          renderCourses(data.courses);
-          openScreen('screenCourses');
+          renderCourses(data.courses || []);
+          fillProfileCard();
+          selectMainTab(0, false, false);
         } else {
           triggerHaptic('error');
           notify('Ошибка входа: ' + (data.error || 'Проверь логин и пароль'));
@@ -797,9 +1153,7 @@
     }
 
     async function performLogout() {
-      const confirmLogout = confirm('Выйти из аккаунта study.rea.ru?');
-      if (!confirmLogout) return;
-
+      confirmAction('Выйти из аккаунта study.rea.ru?', async () => {
       triggerHaptic('medium');
       openScreen('screenLoading');
 
@@ -811,6 +1165,8 @@
       safeStorage.set('moodle_auth_token', '');
       state.userLogin = '';
       state.courses = [];
+      state.mainTab = 0;
+      applyTabTransform(0, false);
       document.getElementById('userNameLabel').textContent = 'Moodle РЭУ';
       document.getElementById('userStatusLabel').textContent = 'Не авторизован';
       document.getElementById('profileChevron').style.display = 'none';
@@ -819,6 +1175,7 @@
       document.getElementById('passwordInput').value = '';
 
       openScreen('screenLogin');
+      });
     }
 
     function renderCourses(courses) {
@@ -889,6 +1246,7 @@
           const max = parseFloat(data.max) || 100;
           const percent = Math.min(100, Math.max(0, max > 0 ? (total / max) * 100 : 0));
 
+          document.getElementById('gradesProgressBar').style.width = '0%';
           document.getElementById('gradesTotalNum').textContent = data.total;
           document.getElementById('gradesTotalMax').textContent = `/ ${data.max}`;
 
@@ -965,8 +1323,9 @@
         const filesContainer = document.getElementById('filesContainer');
         filesContainer.innerHTML = '';
 
-        if (data.details.files && data.details.files.length > 0) {
-          data.details.files.forEach(f => {
+        const files = (data.details && data.details.files) ? data.details.files : [];
+        if (files.length > 0) {
+          files.forEach(f => {
             const div = document.createElement('div');
             div.className = 'list-item';
             div.style.padding = '12px 0';
@@ -1021,6 +1380,7 @@
       if (file.size > 15 * 1024 * 1024) {
         triggerHaptic('error');
         notify('Файл превышает 15 МБ. Сожми его перед отправкой.');
+        event.target.value = '';
         return;
       }
 
@@ -1072,6 +1432,7 @@
         if (res.success) {
           triggerHaptic('success');
           notify('Работа успешно сдана на портал РЭУ!');
+          document.getElementById('filePicker').value = '';
           openScreen('screenTopics');
         } else {
           triggerHaptic('error');
@@ -1088,23 +1449,31 @@
 
     async function refreshCourses() {
       triggerHaptic('medium');
+      const returnTab = state.mainTab;
       openScreen('screenLoading');
       try {
         const resp = await fetch(`${API_URL}?action=init&refresh=1&${getAuthParams()}`);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
 
-        if (data.loggedIn && data.courses && data.courses.length > 0) {
-          state.userLogin = data.login;
-          renderCourses(data.courses);
-          openScreen('screenCourses');
+        if (data.loggedIn) {
+          state.userLogin = data.login || state.userLogin;
+          document.getElementById('userNameLabel').textContent = state.userLogin;
+          document.getElementById('userStatusLabel').textContent = 'В сети';
+          renderCourses(data.courses || []);
+          fillProfileCard();
+          selectMainTab(returnTab, false, false);
           triggerHaptic('success');
         } else {
           initApp();
         }
       } catch (e) {
         notify('Ошибка обновления. Проверь связь.');
-        openScreen('screenCourses');
+        if (state.userLogin) {
+          selectMainTab(returnTab, false, false);
+        } else {
+          openScreen('screenLogin');
+        }
       }
     }
 
